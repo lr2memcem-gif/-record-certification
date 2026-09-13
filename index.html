@@ -3,511 +3,745 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Student Record Certification Portal</title>
+  <title>Mechanical Engineering | Record Certification Portal</title>
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Phosphor Icons (Mechanical / Engineering Glyphs) -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
-</head>
-<body class="bg-slate-50 text-slate-800 min-h-screen font-sans flex flex-col">
+  <!-- SheetJS for Excel import / export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-  <header class="bg-indigo-700 text-white shadow-md sticky top-0 z-30">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-      <div class="flex items-center space-x-3">
-        <i class="ph-bold ph-certificate text-3xl text-amber-300"></i>
+  <style>
+    /* Technical Drafting Grid Background */
+    .blueprint-grid {
+      background-color: #0f172a;
+      background-image: 
+        linear-gradient(to right, rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    .gear-spin {
+      animation: spin 16s linear infinite;
+    }
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen font-sans flex flex-col antialiased">
+
+  <!-- Department Header (Industrial Deep Navy / Slate) -->
+  <header class="blueprint-grid text-white border-b-4 border-amber-500 shadow-lg sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      
+      <!-- Mechanical Department Insignia & Titles -->
+      <div class="flex items-center space-x-3.5">
+        <div class="relative w-12 h-12 bg-amber-500/10 rounded-xl border border-amber-500/40 flex items-center justify-center text-amber-400">
+          <i class="ph-bold ph-gear gear-spin text-3xl"></i>
+          <i class="ph-bold ph-wrench text-xs absolute"></i>
+        </div>
         <div>
-          <h1 class="text-xl font-bold tracking-tight">Record Certification Portal</h1>
-          <p class="text-xs text-indigo-200">Department Lab & Practical Record Tracking</p>
+          <div class="flex items-center gap-2">
+            <span class="bg-amber-500/20 text-amber-300 text-[10px] uppercase font-mono px-2 py-0.5 rounded border border-amber-400/30 tracking-widest font-semibold">MECH ENGG</span>
+            <span class="text-xs text-slate-400 font-mono">LAB PRACTICUM PORTAL</span>
+          </div>
+          <h1 class="text-lg sm:text-xl font-black uppercase tracking-tight text-white flex items-center gap-1.5">
+            Department of Mechanical Engineering
+          </h1>
+          <p class="text-xs text-slate-300">Continuous Record Certification & HoS Sign-off System</p>
         </div>
       </div>
 
-      <nav class="flex bg-indigo-800/60 p-1 rounded-xl text-sm font-medium border border-indigo-600/50">
-        <button onclick="switchTab('staff')" id="tab-staff" class="px-4 py-2 rounded-lg transition-all bg-white text-indigo-900 shadow">
-          Staff Dashboard
+      <!-- Navigation Tabs -->
+      <nav class="flex bg-slate-900/80 p-1.5 rounded-xl border border-slate-700 text-xs font-semibold shadow-inner">
+        <button onclick="switchView('staff')" id="nav-staff" class="px-4 py-2 rounded-lg transition-all bg-amber-500 text-slate-950 font-bold shadow flex items-center gap-1.5">
+          <i class="ph-bold ph-gauge"></i> Staff / HoS Console
         </button>
-        <button onclick="switchTab('student')" id="tab-student" class="px-4 py-2 rounded-lg transition-all text-indigo-100 hover:text-white">
-          Student Status View
+        <button onclick="switchView('student')" id="nav-student" class="px-4 py-2 rounded-lg transition-all text-slate-300 hover:text-white flex items-center gap-1.5">
+          <i class="ph-bold ph-student"></i> Student Verification
         </button>
       </nav>
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full">
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full space-y-6">
 
+    <!-- ============================================================ -->
+    <!-- STAFF / HOS CONSOLE -->
+    <!-- ============================================================ -->
     <div id="staff-section" class="space-y-6">
-      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
-          <div>
-            <p class="text-xs font-semibold text-slate-500 uppercase">Total Students</p>
-            <h3 id="stat-total" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
-          </div>
-          <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl text-xl">
-            <i class="ph-bold ph-users"></i>
-          </div>
+
+      <!-- STEP 1: YEAR SELECTION (Mechanical Design) -->
+      <div id="year-selection-card" class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="text-center max-w-xl mx-auto mb-8">
+          <span class="inline-flex items-center gap-1 text-xs uppercase font-mono font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+            <i class="ph-bold ph-compass"></i> Select Academic Batch
+          </span>
+          <h2 class="text-2xl font-black text-slate-900 mt-2 uppercase tracking-tight">Mechanical Engineering Practicum</h2>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">Select class year to access lab records, evaluation checklists, and HoS sign-off.</p>
         </div>
 
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
-          <div>
-            <p class="text-xs font-semibold text-emerald-600 uppercase">Certified</p>
-            <h3 id="stat-certified" class="text-2xl font-bold text-emerald-700 mt-1">0</h3>
-          </div>
-          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl text-xl">
-            <i class="ph-bold ph-check-circle"></i>
-          </div>
-        </div>
-
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
-          <div>
-            <p class="text-xs font-semibold text-amber-600 uppercase">Pending</p>
-            <h3 id="stat-pending" class="text-2xl font-bold text-amber-700 mt-1">0</h3>
-          </div>
-          <div class="p-3 bg-amber-50 text-amber-600 rounded-xl text-xl">
-            <i class="ph-bold ph-clock"></i>
-          </div>
-        </div>
-
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
-          <div>
-            <p class="text-xs font-semibold text-rose-600 uppercase">Needs Correction</p>
-            <h3 id="stat-correction" class="text-2xl font-bold text-rose-700 mt-1">0</h3>
-          </div>
-          <div class="p-3 bg-rose-50 text-rose-600 rounded-xl text-xl">
-            <i class="ph-bold ph-warning-circle"></i>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
-        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          <div class="relative w-full sm:w-64">
-            <i class="ph-bold ph-magnifying-glass absolute left-3 top-3 text-slate-400"></i>
-            <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search by name or reg no..."
-              class="w-full pl-9 pr-3 py-2 border rounded-xl border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"/>
-          </div>
-
-          <select id="statusFilter" onchange="renderTable()" class="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
-            <option value="ALL">All Statuses</option>
-            <option value="Certified">Certified Only</option>
-            <option value="Pending">Pending Only</option>
-            <option value="Correction">Needs Correction</option>
-          </select>
-
-          <select id="deptFilter" onchange="renderTable()" class="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
-            <option value="ALL">All Departments</option>
-            <option value="CSE">CSE</option>
-            <option value="ECE">ECE</option>
-            <option value="MECH">MECH</option>
-            <option value="EEE">EEE</option>
-          </select>
-        </div>
-
-        <div class="flex items-center gap-2 w-full md:w-auto justify-end">
-          <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
-          <button onclick="document.getElementById('csvFileInput').click()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm transition">
-            <i class="ph-bold ph-upload-simple text-lg"></i>
-            Upload CSV
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-4xl mx-auto">
+          <!-- 1st Year ME -->
+          <button onclick="selectYear('1st')" class="p-6 rounded-2xl border-2 border-slate-200 hover:border-amber-500 hover:bg-amber-50/30 transition-all text-center group bg-white shadow-sm hover:shadow-md">
+            <div class="w-14 h-14 rounded-2xl bg-slate-900 text-amber-400 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-inner">
+              <i class="ph-bold ph-compass-tool text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 uppercase tracking-tight">1st Year ME</h3>
+            <p class="text-xs text-slate-500 font-mono mt-1">Graphics, Basic Workshop, Applied Labs</p>
+            <span class="inline-block mt-3 text-[11px] font-bold text-amber-700 bg-amber-100 px-3 py-1 rounded-full">Open Console →</span>
           </button>
-          <button onclick="exportPendingCSV()" class="bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm transition">
-            <i class="ph-bold ph-file-arrow-down text-lg"></i>
-            Export Pending
+
+          <!-- 2nd Year ME -->
+          <button onclick="selectYear('2nd')" class="p-6 rounded-2xl border-2 border-slate-200 hover:border-amber-500 hover:bg-amber-50/30 transition-all text-center group bg-white shadow-sm hover:shadow-md">
+            <div class="w-14 h-14 rounded-2xl bg-slate-900 text-amber-400 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-inner">
+              <i class="ph-bold ph-nut text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 uppercase tracking-tight">2nd Year ME</h3>
+            <p class="text-xs text-slate-500 font-mono mt-1">MT, EEE, ADD CAD, Workshop, Reports</p>
+            <span class="inline-block mt-3 text-[11px] font-bold text-amber-700 bg-amber-100 px-3 py-1 rounded-full">Open Console →</span>
           </button>
-          <button onclick="openAddModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm transition">
-            <i class="ph-bold ph-user-plus text-lg"></i>
-            Add Student
+
+          <!-- 3rd Year ME -->
+          <button onclick="selectYear('3rd')" class="p-6 rounded-2xl border-2 border-slate-200 hover:border-amber-500 hover:bg-amber-50/30 transition-all text-center group bg-white shadow-sm hover:shadow-md">
+            <div class="w-14 h-14 rounded-2xl bg-slate-900 text-amber-400 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-inner">
+              <i class="ph-bold ph-engine text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 uppercase tracking-tight">3rd Year ME</h3>
+            <p class="text-xs text-slate-500 font-mono mt-1">HM, AE, Machine Shop, Seminar</p>
+            <span class="inline-block mt-3 text-[11px] font-bold text-amber-700 bg-amber-100 px-3 py-1 rounded-full">Open Console →</span>
           </button>
         </div>
       </div>
 
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead class="bg-slate-100/70 border-b border-slate-200 text-slate-600 font-semibold uppercase text-xs">
-              <tr>
-                <th class="p-4">Reg / Roll No</th>
-                <th class="p-4">Student Name</th>
-                <th class="p-4">Dept / Sem</th>
-                <th class="p-4">Subject / Lab</th>
-                <th class="p-4">Status</th>
-                <th class="p-4">Staff Remarks</th>
-                <th class="p-4">Certification Date</th>
-                <th class="p-4 text-center">Action</th>
-              </tr>
-            </thead>
-            <tbody id="studentTableBody" class="divide-y divide-slate-100"></tbody>
-          </table>
+      <!-- STEP 2: YEAR CONSOLE (Visible upon year selection) -->
+      <div id="year-dashboard" class="hidden space-y-6">
+
+        <!-- Top Control Bar -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
+          
+          <div class="flex items-center gap-3">
+            <button onclick="backToYearSelection()" class="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 transition" title="Switch Year">
+              <i class="ph-bold ph-arrow-left text-lg"></i>
+            </button>
+            <div>
+              <div class="flex items-center gap-2">
+                <span id="active-year-badge" class="px-2.5 py-0.5 rounded-md text-[11px] font-mono font-bold uppercase bg-slate-900 text-amber-300">2nd Year ME</span>
+                <span class="text-xs text-slate-400 font-mono">CHECKLIST CONSOLE</span>
+              </div>
+              <h2 class="text-base sm:text-lg font-bold text-slate-900">Record Certification Dashboard</h2>
+            </div>
+          </div>
+
+          <!-- Role Toggle: Staff In-Charge vs Head of Section (HoS) -->
+          <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-semibold">
+            <span class="text-slate-500 px-2.5 font-mono text-[11px] uppercase">Active Role:</span>
+            <button onclick="setRole('Staff')" id="role-staff" class="px-3.5 py-2 rounded-lg bg-amber-500 text-slate-950 font-bold shadow-sm transition flex items-center gap-1">
+              <i class="ph-bold ph-user-circle-gear"></i> Staff In-Charge
+            </button>
+            <button onclick="setRole('HoS')" id="role-hos" class="px-3.5 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1">
+              <i class="ph-bold ph-seal-check"></i> Head of Section (HoS)
+            </button>
+          </div>
+
+          <!-- Excel Upload & Extraction Actions -->
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="downloadSampleTemplate()" class="px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center gap-1.5 transition">
+              <i class="ph-bold ph-download-simple text-amber-600 text-sm"></i>
+              Template (.xlsx)
+            </button>
+            <input type="file" id="excelInput" accept=".xlsx, .xls" class="hidden" onchange="handleExcelUpload(event)">
+            <button onclick="document.getElementById('excelInput').click()" class="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs font-semibold text-white flex items-center gap-1.5 shadow-sm transition">
+              <i class="ph-bold ph-file-arrow-up text-amber-400 text-sm"></i>
+              Upload ME Roster
+            </button>
+            <button onclick="exportPendingList()" class="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-xs font-semibold text-white flex items-center gap-1.5 shadow-sm transition">
+              <i class="ph-bold ph-file-arrow-down text-sm"></i>
+              Extract Pending List
+            </button>
+          </div>
         </div>
-        <div id="noDataMessage" class="hidden p-8 text-center text-slate-400">
-          No student records found.
+
+        <!-- Fast Roll Number Certification Box (Workshop Speed Style) -->
+        <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-sm border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-400/30 flex items-center justify-center text-amber-400 text-xl">
+              <i class="ph-bold ph-barcode"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-sm sm:text-base text-white">Rapid Roll Number Certification</h3>
+              <p class="text-xs text-slate-400 font-mono">Type student roll number and press Enter to mark all 6 records</p>
+            </div>
+          </div>
+          <form onsubmit="handleQuickCertify(event)" class="flex gap-2 w-full md:w-auto">
+            <input type="text" id="quickRollInput" placeholder="Enter Roll (e.g. 24ME105)" required
+              class="px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-400 text-xs sm:text-sm font-mono uppercase outline-none focus:border-amber-400 w-full sm:w-64"/>
+            <button type="submit" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center gap-1">
+              Mark Complete
+            </button>
+          </form>
         </div>
+
+        <!-- Filter Bar -->
+        <div class="flex flex-col sm:flex-row justify-between gap-3 items-center">
+          <div class="relative w-full sm:w-80">
+            <i class="ph-bold ph-magnifying-glass absolute left-3 top-2.5 text-slate-400"></i>
+            <input type="text" id="filterInput" oninput="renderTable()" placeholder="Search roll no or student name..."
+              class="w-full pl-9 pr-3 py-2 border rounded-xl text-xs sm:text-sm border-slate-200 outline-none focus:ring-2 focus:ring-amber-500 bg-white font-mono"/>
+          </div>
+          <div class="flex items-center gap-2 text-xs font-semibold text-slate-600">
+            <span>Filter Status:</span>
+            <select id="certFilter" onchange="renderTable()" class="border border-slate-200 rounded-lg px-3 py-1.5 bg-white text-xs outline-none">
+              <option value="ALL">All Students</option>
+              <option value="STAFF_PENDING">Pending Staff Sign</option>
+              <option value="HOS_PENDING">Pending HoS Final Sign</option>
+              <option value="FULLY_CERTIFIED">Fully Certified (Staff + HoS)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 6 Requirements Checklist Table -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs sm:text-sm">
+              <thead class="bg-slate-900 text-white uppercase text-[11px] font-mono tracking-wider">
+                <tr id="table-headers">
+                  <!-- Dynamic Headers per batch -->
+                </tr>
+              </thead>
+              <tbody id="studentTableBody" class="divide-y divide-slate-100">
+                <!-- Records injected by JS -->
+              </tbody>
+            </table>
+          </div>
+          <div id="noDataRow" class="hidden p-8 text-center text-slate-400 text-xs sm:text-sm">
+            No students found matching your criteria. Use "Upload ME Roster" to import candidates.
+          </div>
+        </div>
+
       </div>
+
     </div>
 
+    <!-- ============================================================ -->
+    <!-- STUDENT VERIFICATION PORTAL -->
+    <!-- ============================================================ -->
     <div id="student-section" class="hidden max-w-2xl mx-auto space-y-6">
-      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm text-center">
-        <div class="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
-          <i class="ph-bold ph-id-card"></i>
+      <div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm text-center">
+        <div class="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl border border-amber-200 flex items-center justify-center mx-auto mb-3 text-2xl">
+          <i class="ph-bold ph-identification-card"></i>
         </div>
-        <h2 class="text-xl font-bold text-slate-800">Check Certification Status</h2>
-        <p class="text-sm text-slate-500 mt-1">Enter your Register / Roll Number</p>
+        <span class="text-[10px] font-mono font-bold tracking-widest text-slate-400 uppercase">Mechanical Engineering Department</span>
+        <h2 class="text-xl font-bold text-slate-900 mt-1">Student Record Certification Status</h2>
+        <p class="text-xs text-slate-500 mt-1">Verify completion of all 6 prescribed laboratory records, Staff certification, and final HoS clearance.</p>
 
-        <form onsubmit="searchStudentRecord(event)" class="mt-6 flex gap-2">
-          <input type="text" id="studentSearchInput" required placeholder="e.g. 2026CS101"
-            class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none uppercase font-mono" />
-          <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2.5 rounded-xl transition flex items-center gap-2">
-            <i class="ph-bold ph-magnifying-glass"></i>
-            Search
+        <form onsubmit="searchStudent(event)" class="mt-6 flex gap-2">
+          <input type="text" id="studSearchRoll" required placeholder="Enter Register / Roll No (e.g. 24ME201)"
+            class="flex-1 px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 outline-none uppercase font-mono text-sm font-bold tracking-wide" />
+          <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold px-6 py-3 rounded-xl transition text-xs sm:text-sm flex items-center gap-1.5 shadow-sm">
+            <i class="ph-bold ph-magnifying-glass"></i> Check
           </button>
         </form>
       </div>
 
-      <div id="studentResultCard" class="hidden bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <!-- Result Card -->
+      <div id="studentResultCard" class="hidden bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
         <div class="flex justify-between items-start border-b pb-4">
           <div>
-            <h3 id="res-name" class="text-lg font-bold text-slate-800">-</h3>
-            <p id="res-roll" class="text-sm font-mono text-slate-500">-</p>
-            <p id="res-dept" class="text-xs text-slate-400 mt-1">-</p>
+            <h3 id="res-name" class="text-lg font-bold text-slate-900 uppercase">-</h3>
+            <p id="res-roll" class="text-xs font-mono font-bold text-amber-600 mt-0.5">-</p>
+            <span id="res-year" class="inline-block mt-1 text-[11px] px-2.5 py-0.5 rounded font-mono font-bold bg-slate-100 text-slate-700">-</span>
           </div>
-          <span id="res-badge" class="px-3 py-1 rounded-full text-xs font-semibold">Pending</span>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <p class="text-slate-500 text-xs uppercase font-medium">Lab Subject</p>
-            <p id="res-subject" class="font-semibold text-slate-700 mt-0.5">-</p>
-          </div>
-          <div>
-            <p class="text-slate-500 text-xs uppercase font-medium">Certified Date</p>
-            <p id="res-date" class="font-semibold text-slate-700 mt-0.5">-</p>
+          <div class="text-right">
+            <span id="res-hos-badge" class="px-3 py-1 rounded-full text-xs font-bold inline-block">HoS Pending</span>
           </div>
         </div>
 
-        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
-          <p class="text-xs font-semibold uppercase text-slate-500">Staff Remarks:</p>
-          <p id="res-remarks" class="text-sm text-slate-700 mt-1 italic">-</p>
+        <div>
+          <h4 class="text-xs font-mono font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <i class="ph-bold ph-check-square-offset text-amber-600"></i> Prescribed Practical Components (6 Items)
+          </h4>
+          <div id="res-items-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs font-mono">
+            <!-- Items populated via JS -->
+          </div>
+        </div>
+
+        <div class="border-t pt-4 grid grid-cols-2 gap-4 text-xs font-mono">
+          <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+            <p class="font-bold text-slate-500 uppercase text-[10px]">Staff In-Charge Sign</p>
+            <p id="res-staff-status" class="mt-1 font-bold text-slate-800 text-xs">-</p>
+          </div>
+          <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+            <p class="font-bold text-slate-500 uppercase text-[10px]">Head of Section (HoS)</p>
+            <p id="res-hos-status" class="mt-1 font-bold text-slate-800 text-xs">-</p>
+          </div>
         </div>
       </div>
 
-      <div id="studentNotFound" class="hidden bg-rose-50 text-rose-700 p-4 rounded-xl border border-rose-200 text-center text-sm font-medium">
-        No record found with that Register Number.
+      <div id="studentNotFound" class="hidden bg-rose-50 text-rose-700 p-4 rounded-xl border border-rose-200 text-center text-xs font-mono font-bold">
+        Roll number not found in Department of Mechanical Engineering records.
       </div>
     </div>
 
   </main>
 
-  <div id="editModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
-      <div class="px-6 py-4 bg-slate-50 border-b flex justify-between items-center">
-        <h3 id="modalTitle" class="font-bold text-slate-800">Update Record Status</h3>
-        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-lg"><i class="ph-bold ph-x"></i></button>
-      </div>
-
-      <form id="recordForm" onsubmit="handleSaveRecord(event)" class="p-6 space-y-4">
-        <input type="hidden" id="editId" />
-        
-        <div>
-          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Register / Roll Number</label>
-          <input type="text" id="formRoll" required class="w-full px-3 py-2 border rounded-xl text-sm border-slate-200 uppercase font-mono outline-none focus:ring-2 focus:ring-indigo-500"/>
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Student Name</label>
-          <input type="text" id="formName" required class="w-full px-3 py-2 border rounded-xl text-sm border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"/>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Department</label>
-            <select id="formDept" class="w-full px-3 py-2 border rounded-xl text-sm border-slate-200 bg-white">
-              <option value="CSE">CSE</option>
-              <option value="ECE">ECE</option>
-              <option value="MECH">MECH</option>
-              <option value="EEE">EEE</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Semester</label>
-            <input type="text" id="formSem" placeholder="e.g. S6" required class="w-full px-3 py-2 border rounded-xl text-sm border-slate-200 outline-none"/>
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Subject / Lab</label>
-          <input type="text" id="formSubject" required class="w-full px-3 py-2 border rounded-xl text-sm border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"/>
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Certification Status</label>
-          <select id="formStatus" class="w-full px-3 py-2 border rounded-xl text-sm border-slate-200 bg-white font-medium">
-            <option value="Pending">Pending</option>
-            <option value="Certified">Certified (Approved)</option>
-            <option value="Correction">Needs Correction</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Remarks / Instructions</label>
-          <textarea id="formRemarks" rows="2" placeholder="Notes for the student..." class="w-full px-3 py-2 border rounded-xl text-sm border-slate-200 outline-none"></textarea>
-        </div>
-
-        <div class="flex justify-end gap-2 pt-2">
-          <button type="button" onclick="closeModal()" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-xl">Cancel</button>
-          <button type="submit" class="px-5 py-2 text-sm bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700">Save Record</button>
-        </div>
-      </form>
-    </div>
-  </div>
+  <!-- Footer -->
+  <footer class="mt-auto py-4 bg-slate-900 text-slate-400 text-center text-xs border-t border-slate-800 font-mono">
+    Department of Mechanical Engineering • Academic Record Certification Portal
+  </footer>
 
   <script>
-    const initialData = [
-      { id: "1", roll: "2026CS101", name: "Aarav Nair", dept: "CSE", sem: "S6", subject: "Compiler Design Lab", status: "Certified", remarks: "All experiments completed with viva", certifiedDate: "2026-03-10" },
-      { id: "2", roll: "2026CS102", name: "Diya Sharma", dept: "CSE", sem: "S6", subject: "Compiler Design Lab", status: "Pending", remarks: "Need to submit Exp 9 & 10", certifiedDate: "-" },
-      { id: "3", roll: "2026CS103", name: "Rohan Varma", dept: "CSE", sem: "S6", subject: "Compiler Design Lab", status: "Correction", remarks: "Redo observation table for Exp 4", certifiedDate: "-" }
+    // Exact Mechanical Engineering Lab Curriculum Schema
+    const ME_YEAR_CONFIGS = {
+      "1st": {
+        title: "1st Year ME",
+        items: [
+          "BASIC WORKSHOP",
+          "ENGG GRAPHICS (ME)",
+          "APPLIED PHYSICS LAB",
+          "APPLIED CHEM LAB",
+          "COMPUTING PRACTICUM",
+          "COMPLIANCE REPORT"
+        ]
+      },
+      "2nd": {
+        title: "2nd Year ME",
+        items: [
+          "MT LAB",
+          "EEE LAB",
+          "ADD CAD LAB",
+          "WORKSHOP",
+          "INTERNSHIP REPORT",
+          "COMPLIANCE REPORT"
+        ]
+      },
+      "3rd": {
+        title: "3rd Year ME",
+        items: [
+          "HM LAB",
+          "AE LAB",
+          "MACHINE SHOP",
+          "SEMINAR REPORT",
+          "INTERNSHIP REPORT",
+          "COMPLIANCE REPORT"
+        ]
+      }
+    };
+
+    let currentYear = "2nd";
+    let activeRole = "Staff"; // "Staff" or "HoS"
+
+    // Default Mechanical Engineering Sample Records
+    const defaultMechData = [
+      {
+        roll: "24ME201",
+        name: "Aarav Nair",
+        year: "2nd",
+        items: { "MT LAB": true, "EEE LAB": true, "ADD CAD LAB": true, "WORKSHOP": true, "INTERNSHIP REPORT": true, "COMPLIANCE REPORT": true },
+        staffCertified: true,
+        hosCertified: true
+      },
+      {
+        roll: "24ME202",
+        name: "Vishnu Prasad",
+        year: "2nd",
+        items: { "MT LAB": true, "EEE LAB": true, "ADD CAD LAB": false, "WORKSHOP": true, "INTERNSHIP REPORT": false, "COMPLIANCE REPORT": false },
+        staffCertified: false,
+        hosCertified: false
+      },
+      {
+        roll: "23ME301",
+        name: "Muhammed Fayis",
+        year: "3rd",
+        items: { "HM LAB": true, "AE LAB": true, "MACHINE SHOP": true, "SEMINAR REPORT": true, "INTERNSHIP REPORT": true, "COMPLIANCE REPORT": true },
+        staffCertified: true,
+        hosCertified: false
+      }
     ];
 
-    function getStudents() {
-      const stored = localStorage.getItem("certified_students");
-      if (!stored) {
-        localStorage.setItem("certified_students", JSON.stringify(initialData));
-        return initialData;
+    function getStore() {
+      const data = localStorage.getItem("mech_records_data");
+      if (!data) {
+        localStorage.setItem("mech_records_data", JSON.stringify(defaultMechData));
+        return defaultMechData;
       }
-      return JSON.parse(stored);
+      return JSON.parse(data);
     }
 
-    function saveStudents(data) {
-      localStorage.setItem("certified_students", JSON.stringify(data));
-      updateStats();
+    function saveStore(data) {
+      localStorage.setItem("mech_records_data", JSON.stringify(data));
       renderTable();
     }
 
-    function switchTab(tab) {
+    function setRole(role) {
+      activeRole = role;
+      const bStaff = document.getElementById("role-staff");
+      const bHos = document.getElementById("role-hos");
+      if (role === "Staff") {
+        bStaff.className = "px-3.5 py-2 rounded-lg bg-amber-500 text-slate-950 font-bold shadow-sm transition flex items-center gap-1";
+        bHos.className = "px-3.5 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1";
+      } else {
+        bHos.className = "px-3.5 py-2 rounded-lg bg-amber-500 text-slate-950 font-bold shadow-sm transition flex items-center gap-1";
+        bStaff.className = "px-3.5 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1";
+      }
+      renderTable();
+    }
+
+    function switchView(view) {
       const staffSec = document.getElementById("staff-section");
       const studSec = document.getElementById("student-section");
-      const tabStaff = document.getElementById("tab-staff");
-      const tabStud = document.getElementById("tab-student");
+      const navStaff = document.getElementById("nav-staff");
+      const navStud = document.getElementById("nav-student");
 
-      if (tab === "staff") {
+      if (view === "staff") {
         staffSec.classList.remove("hidden");
         studSec.classList.add("hidden");
-        tabStaff.className = "px-4 py-2 rounded-lg transition-all bg-white text-indigo-900 shadow";
-        tabStud.className = "px-4 py-2 rounded-lg transition-all text-indigo-100 hover:text-white";
+        navStaff.className = "px-4 py-2 rounded-lg transition-all bg-amber-500 text-slate-950 font-bold shadow flex items-center gap-1.5";
+        navStud.className = "px-4 py-2 rounded-lg transition-all text-slate-300 hover:text-white flex items-center gap-1.5";
         renderTable();
       } else {
         staffSec.classList.add("hidden");
         studSec.classList.remove("hidden");
-        tabStud.className = "px-4 py-2 rounded-lg transition-all bg-white text-indigo-900 shadow";
-        tabStaff.className = "px-4 py-2 rounded-lg transition-all text-indigo-100 hover:text-white";
+        navStud.className = "px-4 py-2 rounded-lg transition-all bg-amber-500 text-slate-950 font-bold shadow flex items-center gap-1.5";
+        navStaff.className = "px-4 py-2 rounded-lg transition-all text-slate-300 hover:text-white flex items-center gap-1.5";
       }
     }
 
-    function updateStats() {
-      const list = getStudents();
-      document.getElementById("stat-total").innerText = list.length;
-      document.getElementById("stat-certified").innerText = list.filter(s => s.status === "Certified").length;
-      document.getElementById("stat-pending").innerText = list.filter(s => s.status === "Pending").length;
-      document.getElementById("stat-correction").innerText = list.filter(s => s.status === "Correction").length;
+    function selectYear(yr) {
+      currentYear = yr;
+      document.getElementById("year-selection-card").classList.add("hidden");
+      document.getElementById("year-dashboard").classList.remove("hidden");
+      document.getElementById("active-year-badge").innerText = `${yr} Year ME`;
+      renderTable();
     }
 
-    function renderTable() {
-      const list = getStudents();
-      const search = document.getElementById("searchInput").value.trim().toLowerCase();
-      const statusF = document.getElementById("statusFilter").value;
-      const deptF = document.getElementById("deptFilter").value;
-      const tbody = document.getElementById("studentTableBody");
-      const noData = document.getElementById("noDataMessage");
+    function backToYearSelection() {
+      document.getElementById("year-dashboard").classList.add("hidden");
+      document.getElementById("year-selection-card").classList.remove("hidden");
+    }
 
-      const filtered = list.filter(s => {
+    // Render Table
+    function renderTable() {
+      const config = ME_YEAR_CONFIGS[currentYear];
+      const headerRow = document.getElementById("table-headers");
+
+      let headerHTML = `
+        <th class="p-3">Roll No</th>
+        <th class="p-3">Student Name</th>
+      `;
+      config.items.forEach(item => {
+        headerHTML += `<th class="p-3 text-center tracking-tight text-[10px] sm:text-xs">${item}</th>`;
+      });
+      headerHTML += `
+        <th class="p-3 text-center">Staff Sign</th>
+        <th class="p-3 text-center">HoS Sign</th>
+      `;
+      headerRow.innerHTML = headerHTML;
+
+      const store = getStore();
+      const search = (document.getElementById("filterInput") ? document.getElementById("filterInput").value : "").trim().toLowerCase();
+      const statusF = document.getElementById("certFilter") ? document.getElementById("certFilter").value : "ALL";
+
+      const filtered = store.filter(s => {
+        if (s.year !== currentYear) return false;
         const matchesSearch = s.roll.toLowerCase().includes(search) || s.name.toLowerCase().includes(search);
-        const matchesStatus = statusF === "ALL" || s.status === statusF;
-        const matchesDept = deptF === "ALL" || s.dept === deptF;
-        return matchesSearch && matchesStatus && matchesDept;
+        if (!matchesSearch) return false;
+
+        if (statusF === "HOS_PENDING") return s.staffCertified && !s.hosCertified;
+        if (statusF === "STAFF_PENDING") return !s.staffCertified;
+        if (statusF === "FULLY_CERTIFIED") return s.staffCertified && s.hosCertified;
+        return true;
       });
 
+      const tbody = document.getElementById("studentTableBody");
+      const noData = document.getElementById("noDataRow");
       tbody.innerHTML = "";
+
       if (filtered.length === 0) {
         noData.classList.remove("hidden");
-      } else {
-        noData.classList.add("hidden");
-        filtered.forEach(s => {
-          let badgeClass = "bg-amber-100 text-amber-800";
-          if (s.status === "Certified") badgeClass = "bg-emerald-100 text-emerald-800";
-          if (s.status === "Correction") badgeClass = "bg-rose-100 text-rose-800";
-
-          const tr = document.createElement("tr");
-          tr.className = "hover:bg-slate-50/80 transition-colors";
-          tr.innerHTML = `
-            <td class="p-4 font-mono font-semibold text-slate-700">${s.roll}</td>
-            <td class="p-4 font-medium text-slate-800">${s.name}</td>
-            <td class="p-4 text-slate-600">${s.dept} (${s.sem})</td>
-            <td class="p-4 text-slate-600">${s.subject}</td>
-            <td class="p-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold ${badgeClass}">${s.status}</span></td>
-            <td class="p-4 text-slate-600 text-xs max-w-xs truncate" title="${s.remarks || ''}">${s.remarks || '<span class="text-slate-300">None</span>'}</td>
-            <td class="p-4 text-slate-500 font-mono text-xs">${s.certifiedDate || '-'}</td>
-            <td class="p-4 text-center">
-              <button onclick="openEditModal('${s.id}')" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium px-2 py-1 rounded hover:bg-indigo-50">
-                Edit / Certify
-              </button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-      }
-    }
-
-    function exportPendingCSV() {
-      const list = getStudents();
-      const pendingStudents = list.filter(s => s.status !== "Certified");
-      if (pendingStudents.length === 0) {
-        alert("No pending records found.");
         return;
       }
-      let csv = "Roll Number,Student Name,Department,Semester,Lab Subject,Status,Remarks\n";
-      pendingStudents.forEach(s => {
-        csv += `"${s.roll}","${s.name}","${s.dept}","${s.sem}","${s.subject}","${s.status}","${(s.remarks || '').replace(/"/g, '""')}"\n`;
+      noData.classList.add("hidden");
+
+      filtered.forEach(s => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-amber-50/40 transition-colors font-mono";
+
+        let cellsHTML = `
+          <td class="p-3 font-bold text-slate-900">${s.roll}</td>
+          <td class="p-3 font-sans font-semibold text-slate-800 whitespace-nowrap">${s.name}</td>
+        `;
+
+        // 6 Checklist items
+        config.items.forEach(item => {
+          const isDone = s.items && s.items[item] === true;
+          cellsHTML += `
+            <td class="p-3 text-center">
+              <input type="checkbox" ${isDone ? "checked" : ""} 
+                ${activeRole !== 'Staff' ? 'disabled' : ''}
+                onchange="toggleItem('${s.roll}', '${item}', this.checked)"
+                class="w-4 h-4 text-amber-600 rounded border-slate-300 focus:ring-amber-500 cursor-pointer disabled:opacity-60" />
+            </td>
+          `;
+        });
+
+        // Staff Sign Button
+        cellsHTML += `
+          <td class="p-3 text-center font-sans">
+            <button onclick="toggleStaffSign('${s.roll}')" 
+              class="px-2.5 py-1 rounded text-xs font-bold transition ${
+                s.staffCertified 
+                  ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' 
+                  : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+              }">
+              ${s.staffCertified ? '✓ Staff Signed' : 'Pending'}
+            </button>
+          </td>
+        `;
+
+        // HoS Sign Button
+        cellsHTML += `
+          <td class="p-3 text-center font-sans">
+            <button onclick="toggleHoSSign('${s.roll}')" 
+              class="px-2.5 py-1 rounded text-xs font-bold transition ${
+                s.hosCertified 
+                  ? 'bg-indigo-100 text-indigo-900 border border-indigo-200 hover:bg-indigo-200' 
+                  : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+              }">
+              ${s.hosCertified ? '✓ HoS Certified' : 'Pending'}
+            </button>
+          </td>
+        `;
+
+        tr.innerHTML = cellsHTML;
+        tbody.appendChild(tr);
       });
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", `Pending_Records_${new Date().toISOString().slice(0,10)}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
     }
 
-    function handleCSVUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const lines = e.target.result.split(/\r?\n/);
-        let list = getStudents();
-        for (let i = 1; i < lines.length; i++) {
-          const row = lines[i].trim();
-          if (!row) continue;
-          const [roll, name, dept, sem, subject] = row.split(',').map(s => s.trim().replace(/^"|"$/g, ''));
-          if (roll && name) {
-            const exists = list.some(s => s.roll.toUpperCase() === roll.toUpperCase());
-            if (!exists) {
-              list.push({
-                id: Date.now().toString() + Math.random().toString(36).substr(2, 4),
-                roll: roll.toUpperCase(),
-                name: name,
-                dept: dept || "CSE",
-                sem: sem || "S6",
-                subject: subject || "Lab Record",
-                status: "Pending",
-                remarks: "",
-                certifiedDate: "-"
-              });
-            }
+    function toggleItem(roll, item, isChecked) {
+      let store = getStore();
+      store = store.map(s => {
+        if (s.roll === roll) {
+          s.items = s.items || {};
+          s.items[item] = isChecked;
+          const config = ME_YEAR_CONFIGS[s.year];
+          const allDone = config.items.every(k => s.items[k] === true);
+          if (allDone) {
+            s.staffCertified = true;
           }
         }
-        saveStudents(list);
-        alert("Students imported successfully!");
+        return s;
+      });
+      saveStore(store);
+    }
+
+    function toggleStaffSign(roll) {
+      let store = getStore();
+      store = store.map(s => {
+        if (s.roll === roll) {
+          s.staffCertified = !s.staffCertified;
+          if (!s.staffCertified) s.hosCertified = false;
+        }
+        return s;
+      });
+      saveStore(store);
+    }
+
+    function toggleHoSSign(roll) {
+      let store = getStore();
+      store = store.map(s => {
+        if (s.roll === roll) {
+          if (!s.staffCertified && !s.hosCertified) {
+            alert("Staff sign-off is still pending for this student.");
+          }
+          s.hosCertified = !s.hosCertified;
+        }
+        return s;
+      });
+      saveStore(store);
+    }
+
+    // Fast roll number entry
+    function handleQuickCertify(e) {
+      e.preventDefault();
+      const rollInput = document.getElementById("quickRollInput");
+      const roll = rollInput.value.trim().toUpperCase();
+      let store = getStore();
+      const student = store.find(s => s.roll.toUpperCase() === roll && s.year === currentYear);
+
+      if (!student) {
+        alert(`Roll Number "${roll}" not found in ${currentYear} Year ME roster.`);
+        return;
+      }
+
+      if (activeRole === "Staff") {
+        const config = ME_YEAR_CONFIGS[currentYear];
+        student.items = student.items || {};
+        config.items.forEach(item => { student.items[item] = true; });
+        student.staffCertified = true;
+        alert(`All 6 records marked & Staff signed for: ${student.name} (${student.roll})`);
+      } else {
+        if (!student.staffCertified) {
+          if (!confirm("Staff has not marked this student yet. Mark HoS certification anyway?")) {
+            return;
+          }
+        }
+        student.hosCertified = true;
+        alert(`HoS Certification complete for: ${student.name} (${student.roll})`);
+      }
+
+      saveStore(store);
+      rollInput.value = "";
+    }
+
+    // 1. Download Sample Excel Template
+    function downloadSampleTemplate() {
+      const templateData = [
+        { "Roll number": "24ME201", "Name": "Rahul K" },
+        { "Roll number": "24ME202", "Name": "Muhammed S" },
+        { "Roll number": "24ME203", "Name": "Vishnu M" }
+      ];
+      const ws = XLSX.utils.json_to_sheet(templateData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "ME_Students");
+      XLSX.writeFile(wb, `Mechanical_Dept_Template_${currentYear}_Year.xlsx`);
+    }
+
+    // 2. Upload Excel (.xlsx)
+    function handleExcelUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type: "array" });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws);
+
+        let store = getStore();
+        let addedCount = 0;
+        const config = ME_YEAR_CONFIGS[currentYear];
+
+        rows.forEach(r => {
+          const roll = (r["Roll number"] || r["Roll Number"] || r["Roll No"] || r["roll"] || "").toString().trim().toUpperCase();
+          const name = (r["Name"] || r["Student Name"] || r["name"] || "").toString().trim();
+
+          if (roll && name) {
+            const exists = store.some(s => s.roll === roll && s.year === currentYear);
+            if (!exists) {
+              const defaultItems = {};
+              config.items.forEach(it => defaultItems[it] = false);
+
+              store.push({
+                roll,
+                name,
+                year: currentYear,
+                items: defaultItems,
+                staffCertified: false,
+                hosCertified: false
+              });
+              addedCount++;
+            }
+          }
+        });
+
+        saveStore(store);
+        alert(`Successfully imported ${addedCount} students into ${currentYear} Year Mechanical list.`);
         event.target.value = "";
       };
-      reader.readAsText(file);
+      reader.readAsArrayBuffer(file);
     }
 
-    function openAddModal() {
-      document.getElementById("modalTitle").innerText = "Add Student Record";
-      document.getElementById("editId").value = "";
-      document.getElementById("formRoll").value = "";
-      document.getElementById("formName").value = "";
-      document.getElementById("formSem").value = "S6";
-      document.getElementById("formSubject").value = "Compiler Design Lab";
-      document.getElementById("formStatus").value = "Pending";
-      document.getElementById("formRemarks").value = "";
-      document.getElementById("editModal").classList.remove("hidden");
-    }
+    // 3. Extract Pending List to Excel
+    function exportPendingList() {
+      const store = getStore();
+      const config = ME_YEAR_CONFIGS[currentYear];
+      const pendingRows = [];
 
-    function openEditModal(id) {
-      const list = getStudents();
-      const s = list.find(x => x.id === id);
-      if (!s) return;
-      document.getElementById("modalTitle").innerText = "Edit Certification Status";
-      document.getElementById("editId").value = s.id;
-      document.getElementById("formRoll").value = s.roll;
-      document.getElementById("formName").value = s.name;
-      document.getElementById("formDept").value = s.dept;
-      document.getElementById("formSem").value = s.sem;
-      document.getElementById("formSubject").value = s.subject;
-      document.getElementById("formStatus").value = s.status;
-      document.getElementById("formRemarks").value = s.remarks || "";
-      document.getElementById("editModal").classList.remove("hidden");
-    }
+      store.filter(s => s.year === currentYear).forEach(s => {
+        const pendingItems = config.items.filter(it => !s.items || s.items[it] !== true);
+        const isPending = pendingItems.length > 0 || !s.staffCertified || !s.hosCertified;
 
-    function closeModal() {
-      document.getElementById("editModal").classList.add("hidden");
-    }
+        if (isPending) {
+          pendingRows.push({
+            "Department": "Mechanical Engineering",
+            "Roll Number": s.roll,
+            "Name": s.name,
+            "Batch / Year": `${currentYear} Year ME`,
+            "Pending Lab Records": pendingItems.join(", ") || "All labs marked",
+            "Staff Sign Status": s.staffCertified ? "Signed" : "Pending",
+            "HoS Certification": s.hosCertified ? "Certified" : "Pending"
+          });
+        }
+      });
 
-    function handleSaveRecord(e) {
-      e.preventDefault();
-      const id = document.getElementById("editId").value;
-      const roll = document.getElementById("formRoll").value.trim().toUpperCase();
-      const name = document.getElementById("formName").value.trim();
-      const dept = document.getElementById("formDept").value;
-      const sem = document.getElementById("formSem").value.trim();
-      const subject = document.getElementById("formSubject").value.trim();
-      const status = document.getElementById("formStatus").value;
-      const remarks = document.getElementById("formRemarks").value.trim();
-      let list = getStudents();
-      const today = new Date().toISOString().slice(0,10);
-
-      if (id) {
-        list = list.map(item => {
-          if (item.id === id) {
-            return {
-              ...item, roll, name, dept, sem, subject, status, remarks,
-              certifiedDate: status === "Certified" ? (item.certifiedDate !== "-" ? item.certifiedDate : today) : "-"
-            };
-          }
-          return item;
-        });
-      } else {
-        list.push({
-          id: Date.now().toString(),
-          roll, name, dept, sem, subject, status, remarks,
-          certifiedDate: status === "Certified" ? today : "-"
-        });
+      if (pendingRows.length === 0) {
+        alert(`No pending certifications for ${currentYear} Year ME. All students are certified!`);
+        return;
       }
-      saveStudents(list);
-      closeModal();
+
+      const ws = XLSX.utils.json_to_sheet(pendingRows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Pending List");
+      XLSX.writeFile(wb, `ME_Dept_Pending_Records_${currentYear}_Year_${new Date().toISOString().slice(0,10)}.xlsx`);
     }
 
-    function searchStudentRecord(e) {
+    // Student Lookup Portal
+    function searchStudent(e) {
       e.preventDefault();
-      const query = document.getElementById("studentSearchInput").value.trim().toUpperCase();
-      const resultCard = document.getElementById("studentResultCard");
+      const roll = document.getElementById("studSearchRoll").value.trim().toUpperCase();
+      const card = document.getElementById("studentResultCard");
       const notFound = document.getElementById("studentNotFound");
-      const list = getStudents();
-      const student = list.find(s => s.roll.toUpperCase() === query);
+      const store = getStore();
+
+      const student = store.find(s => s.roll === roll);
 
       if (student) {
         notFound.classList.add("hidden");
-        resultCard.classList.remove("hidden");
+        card.classList.remove("hidden");
+
         document.getElementById("res-name").innerText = student.name;
         document.getElementById("res-roll").innerText = student.roll;
-        document.getElementById("res-dept").innerText = `${student.dept} - ${student.sem}`;
-        document.getElementById("res-subject").innerText = student.subject;
-        document.getElementById("res-date").innerText = student.certifiedDate || "Pending Verification";
-        document.getElementById("res-remarks").innerText = student.remarks || "No remarks entered yet.";
+        document.getElementById("res-year").innerText = `${student.year} Year Mechanical Engineering`;
 
-        const badge = document.getElementById("res-badge");
-        badge.innerText = student.status;
-        if (student.status === "Certified") {
-          badge.className = "px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800";
-        } else if (student.status === "Correction") {
-          badge.className = "px-3 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800";
+        const hosBadge = document.getElementById("res-hos-badge");
+        if (student.hosCertified) {
+          hosBadge.innerText = "✓ HoS Certified";
+          hosBadge.className = "px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-100 text-emerald-900 border border-emerald-300";
         } else {
-          badge.className = "px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800";
+          hosBadge.innerText = "HoS Sign Pending";
+          hosBadge.className = "px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100 text-amber-900 border border-amber-300";
         }
+
+        const itemsGrid = document.getElementById("res-items-grid");
+        itemsGrid.innerHTML = "";
+        const config = ME_YEAR_CONFIGS[student.year] || ME_YEAR_CONFIGS["2nd"];
+
+        config.items.forEach(item => {
+          const done = student.items && student.items[item] === true;
+          const div = document.createElement("div");
+          div.className = `p-2.5 rounded-xl border flex items-center justify-between ${
+            done ? 'bg-emerald-50/60 border-emerald-200 text-emerald-950 font-bold' : 'bg-rose-50/60 border-rose-200 text-rose-950'
+          }`;
+          div.innerHTML = `
+            <span>${item}</span>
+            <span>${done ? '✓ Completed' : '✕ Pending'}</span>
+          `;
+          itemsGrid.appendChild(div);
+        });
+
+        document.getElementById("res-staff-status").innerText = student.staffCertified ? "✓ Approved by Staff In-Charge" : "Pending Staff Verification";
+        document.getElementById("res-hos-status").innerText = student.hosCertified ? "✓ Final Approval Signed by HoS" : "Pending HoS Clearance";
       } else {
-        resultCard.classList.add("hidden");
+        card.classList.add("hidden");
         notFound.classList.remove("hidden");
       }
     }
 
-    updateStats();
-    renderTable();
+    // Default initialization
+    selectYear("2nd");
   </script>
 </body>
 </html>
