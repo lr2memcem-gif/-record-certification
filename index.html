@@ -3,18 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Mechanical Engineering | Record Certification Portal</title>
+  <title>Department of Mechanical Engineering | Record Certification</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Phosphor Icons (Mechanical / Engineering Glyphs) -->
+  <!-- Phosphor Icons -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <!-- SheetJS for Excel import / export -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <style>
-    /* Technical Drafting Grid Background */
     .blueprint-grid {
-      background-color: #0f172a;
+      background-color: #0b1329;
       background-image: 
         linear-gradient(to right, rgba(56, 189, 248, 0.05) 1px, transparent 1px),
         linear-gradient(to bottom, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
@@ -30,196 +29,197 @@
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen font-sans flex flex-col antialiased">
 
-  <!-- Department Header (Industrial Deep Navy / Slate) -->
+  <!-- Department Header -->
   <header class="blueprint-grid text-white border-b-4 border-amber-500 shadow-lg sticky top-0 z-30">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-col md:flex-row justify-between items-center gap-3">
       
-      <!-- Mechanical Department Insignia & Titles -->
+      <!-- Insignia & Department Titles -->
       <div class="flex items-center space-x-3.5">
-        <div class="relative w-12 h-12 bg-amber-500/10 rounded-xl border border-amber-500/40 flex items-center justify-center text-amber-400">
-          <i class="ph-bold ph-gear gear-spin text-3xl"></i>
-          <i class="ph-bold ph-wrench text-xs absolute"></i>
+        <div class="relative w-11 h-11 bg-amber-500/10 rounded-xl border border-amber-500/40 flex items-center justify-center text-amber-400">
+          <i class="ph-bold ph-gear gear-spin text-2xl"></i>
+          <i class="ph-bold ph-wrench text-[10px] absolute"></i>
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <span class="bg-amber-500/20 text-amber-300 text-[10px] uppercase font-mono px-2 py-0.5 rounded border border-amber-400/30 tracking-widest font-semibold">MECH ENGG</span>
-            <span class="text-xs text-slate-400 font-mono">LAB PRACTICUM PORTAL</span>
+            <span class="bg-amber-500/20 text-amber-300 text-[10px] uppercase font-mono px-2 py-0.5 rounded border border-amber-400/30 font-semibold tracking-wider">DEPT OF MECHANICAL ENGG</span>
           </div>
-          <h1 class="text-lg sm:text-xl font-black uppercase tracking-tight text-white flex items-center gap-1.5">
-            Department of Mechanical Engineering
+          <h1 class="text-base sm:text-lg font-black uppercase tracking-tight text-white">
+            Practical Record & Certification Portal
           </h1>
-          <p class="text-xs text-slate-300">Continuous Record Certification & HoS Sign-off System</p>
         </div>
       </div>
 
-      <!-- Navigation Tabs -->
-      <nav class="flex bg-slate-900/80 p-1.5 rounded-xl border border-slate-700 text-xs font-semibold shadow-inner">
-        <button onclick="switchView('staff')" id="nav-staff" class="px-4 py-2 rounded-lg transition-all bg-amber-500 text-slate-950 font-bold shadow flex items-center gap-1.5">
-          <i class="ph-bold ph-gauge"></i> Staff / HoS Console
-        </button>
-        <button onclick="switchView('student')" id="nav-student" class="px-4 py-2 rounded-lg transition-all text-slate-300 hover:text-white flex items-center gap-1.5">
-          <i class="ph-bold ph-student"></i> Student Verification
-        </button>
-      </nav>
+      <!-- User Session Info & Navigation -->
+      <div class="flex items-center gap-3">
+        <div id="session-info" class="hidden flex items-center gap-2 bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-700 text-xs font-mono">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="active-user-name" class="font-bold text-amber-400">User</span>
+          <span id="active-user-role" class="text-slate-400 text-[11px]">(Staff)</span>
+          <button onclick="logoutUser()" class="ml-2 text-slate-400 hover:text-rose-400 transition" title="Logout">
+            <i class="ph-bold ph-sign-out text-sm"></i>
+          </button>
+        </div>
+
+        <nav class="flex bg-slate-900/90 p-1 rounded-xl border border-slate-700 text-xs font-semibold shadow-inner">
+          <button onclick="switchView('staff')" id="nav-staff" class="px-3.5 py-1.5 rounded-lg transition-all bg-amber-500 text-slate-950 font-bold shadow flex items-center gap-1.5">
+            <i class="ph-bold ph-lock-key"></i> Staff / HOD Login
+          </button>
+          <button onclick="switchView('student')" id="nav-student" class="px-3.5 py-1.5 rounded-lg transition-all text-slate-300 hover:text-white flex items-center gap-1.5">
+            <i class="ph-bold ph-student"></i> Student View
+          </button>
+        </nav>
+      </div>
     </div>
   </header>
 
   <!-- Main Container -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full space-y-6">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
 
     <!-- ============================================================ -->
-    <!-- STAFF / HOS CONSOLE -->
+    <!-- LOGIN SCREEN (If not logged in) -->
     <!-- ============================================================ -->
-    <div id="staff-section" class="space-y-6">
+    <div id="login-modal" class="max-w-md mx-auto bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm text-center">
+      <div class="w-14 h-14 bg-slate-900 text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-slate-800 shadow-inner">
+        <i class="ph-bold ph-user-circle-gear text-3xl"></i>
+      </div>
+      <h2 class="text-xl font-black text-slate-900 uppercase tracking-tight">Staff / HOD Portal Login</h2>
+      <p class="text-xs text-slate-500 mt-1 font-mono">Select your name to manage your assigned lab records</p>
 
-      <!-- STEP 1: YEAR SELECTION (Mechanical Design) -->
-      <div id="year-selection-card" class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm">
-        <div class="text-center max-w-xl mx-auto mb-8">
-          <span class="inline-flex items-center gap-1 text-xs uppercase font-mono font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
-            <i class="ph-bold ph-compass"></i> Select Academic Batch
-          </span>
-          <h2 class="text-2xl font-black text-slate-900 mt-2 uppercase tracking-tight">Mechanical Engineering Practicum</h2>
-          <p class="text-xs sm:text-sm text-slate-500 mt-1">Select class year to access lab records, evaluation checklists, and HoS sign-off.</p>
+      <form onsubmit="handleLogin(event)" class="mt-6 space-y-4 text-left">
+        <div>
+          <label class="block text-xs font-bold font-mono text-slate-600 uppercase mb-1">Select Faculty / Role</label>
+          <select id="loginStaffSelect" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold outline-none focus:ring-2 focus:ring-amber-500 bg-white">
+            <option value="">-- Choose Name --</option>
+            <optgroup label="Head of Department">
+              <option value="HOD VIPIN VP">HOD VIPIN VP (Final HoS Certification)</option>
+            </optgroup>
+            <optgroup label="Second Year Lab Staff">
+              <option value="Maneesh T">Maneesh T (MT LAB / 3rd Yr Reports)</option>
+              <option value="Junaid AP">Junaid AP (EEE LAB)</option>
+              <option value="Ashique NK">Ashique NK (ADD CAD, Internship, Compliance)</option>
+              <option value="Sujith N">Sujith N (WORKSHOP)</option>
+            </optgroup>
+            <optgroup label="Third Year Lab Staff">
+              <option value="Shahinsha">Shahinsha (HM LAB)</option>
+              <option value="Hiba Sherin">Hiba Sherin (AE LAB)</option>
+              <option value="Krishnadas PE">Krishnadas PE (MACHINE SHOP)</option>
+            </optgroup>
+            <optgroup label="Department Admin">
+              <option value="Admin">Department Admin (Manage All Rosters)</option>
+            </optgroup>
+          </select>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-4xl mx-auto">
-          <!-- 1st Year ME -->
-          <button onclick="selectYear('1st')" class="p-6 rounded-2xl border-2 border-slate-200 hover:border-amber-500 hover:bg-amber-50/30 transition-all text-center group bg-white shadow-sm hover:shadow-md">
-            <div class="w-14 h-14 rounded-2xl bg-slate-900 text-amber-400 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-inner">
-              <i class="ph-bold ph-compass-tool text-2xl"></i>
-            </div>
-            <h3 class="text-lg font-bold text-slate-900 uppercase tracking-tight">1st Year ME</h3>
-            <p class="text-xs text-slate-500 font-mono mt-1">Graphics, Basic Workshop, Applied Labs</p>
-            <span class="inline-block mt-3 text-[11px] font-bold text-amber-700 bg-amber-100 px-3 py-1 rounded-full">Open Console →</span>
-          </button>
+        <div>
+          <label class="block text-xs font-bold font-mono text-slate-600 uppercase mb-1">Passcode / PIN</label>
+          <input type="password" id="loginPin" placeholder="Default PIN: 1234" value="1234" required
+            class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-amber-500 font-mono tracking-widest"/>
+          <p class="text-[11px] text-slate-400 mt-1 font-mono">Default passcode for all faculty is <span class="font-bold text-slate-600">1234</span></p>
+        </div>
 
-          <!-- 2nd Year ME -->
-          <button onclick="selectYear('2nd')" class="p-6 rounded-2xl border-2 border-slate-200 hover:border-amber-500 hover:bg-amber-50/30 transition-all text-center group bg-white shadow-sm hover:shadow-md">
-            <div class="w-14 h-14 rounded-2xl bg-slate-900 text-amber-400 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-inner">
-              <i class="ph-bold ph-nut text-2xl"></i>
-            </div>
-            <h3 class="text-lg font-bold text-slate-900 uppercase tracking-tight">2nd Year ME</h3>
-            <p class="text-xs text-slate-500 font-mono mt-1">MT, EEE, ADD CAD, Workshop, Reports</p>
-            <span class="inline-block mt-3 text-[11px] font-bold text-amber-700 bg-amber-100 px-3 py-1 rounded-full">Open Console →</span>
-          </button>
+        <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold py-3 rounded-xl transition text-sm flex items-center justify-center gap-2 shadow-sm">
+          <i class="ph-bold ph-sign-in"></i> Sign In to Dashboard
+        </button>
+      </form>
+    </div>
 
-          <!-- 3rd Year ME -->
-          <button onclick="selectYear('3rd')" class="p-6 rounded-2xl border-2 border-slate-200 hover:border-amber-500 hover:bg-amber-50/30 transition-all text-center group bg-white shadow-sm hover:shadow-md">
-            <div class="w-14 h-14 rounded-2xl bg-slate-900 text-amber-400 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-inner">
-              <i class="ph-bold ph-engine text-2xl"></i>
-            </div>
-            <h3 class="text-lg font-bold text-slate-900 uppercase tracking-tight">3rd Year ME</h3>
-            <p class="text-xs text-slate-500 font-mono mt-1">HM, AE, Machine Shop, Seminar</p>
-            <span class="inline-block mt-3 text-[11px] font-bold text-amber-700 bg-amber-100 px-3 py-1 rounded-full">Open Console →</span>
+    <!-- ============================================================ -->
+    <!-- STAFF DASHBOARD (After Login) -->
+    <!-- ============================================================ -->
+    <div id="staff-dashboard" class="hidden space-y-6">
+
+      <!-- Batch & Control Bar -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
+        
+        <!-- Year Switcher -->
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-mono font-bold text-slate-400 uppercase">Batch:</span>
+          <button onclick="setYear('2nd')" id="btn-yr-2nd" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-amber-500 text-slate-950 shadow-sm">
+            2nd Year ME
+          </button>
+          <button onclick="setYear('3rd')" id="btn-yr-3rd" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:bg-slate-100">
+            3rd Year ME
+          </button>
+        </div>
+
+        <!-- Role Scope Notice -->
+        <div id="staff-scope-notice" class="text-xs font-mono bg-amber-50 text-amber-900 px-3 py-1.5 rounded-xl border border-amber-200">
+          Showing assigned records for active faculty
+        </div>
+
+        <!-- Excel Actions -->
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="downloadSampleTemplate()" class="px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center gap-1.5 transition">
+            <i class="ph-bold ph-download-simple text-amber-600"></i>
+            Excel Template
+          </button>
+          <input type="file" id="excelInput" accept=".xlsx, .xls" class="hidden" onchange="handleExcelUpload(event)">
+          <button onclick="document.getElementById('excelInput').click()" class="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs font-semibold text-white flex items-center gap-1.5 shadow-sm transition">
+            <i class="ph-bold ph-file-arrow-up text-amber-400"></i>
+            Upload ME List
+          </button>
+          <button onclick="exportPendingList()" class="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-xs font-semibold text-white flex items-center gap-1.5 shadow-sm transition">
+            <i class="ph-bold ph-file-arrow-down"></i>
+            Extract Pending List
           </button>
         </div>
       </div>
 
-      <!-- STEP 2: YEAR CONSOLE (Visible upon year selection) -->
-      <div id="year-dashboard" class="hidden space-y-6">
-
-        <!-- Top Control Bar -->
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
-          
-          <div class="flex items-center gap-3">
-            <button onclick="backToYearSelection()" class="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 transition" title="Switch Year">
-              <i class="ph-bold ph-arrow-left text-lg"></i>
-            </button>
-            <div>
-              <div class="flex items-center gap-2">
-                <span id="active-year-badge" class="px-2.5 py-0.5 rounded-md text-[11px] font-mono font-bold uppercase bg-slate-900 text-amber-300">2nd Year ME</span>
-                <span class="text-xs text-slate-400 font-mono">CHECKLIST CONSOLE</span>
-              </div>
-              <h2 class="text-base sm:text-lg font-bold text-slate-900">Record Certification Dashboard</h2>
-            </div>
+      <!-- Quick Roll Number Entry Banner -->
+      <div class="bg-slate-900 text-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-400/30 flex items-center justify-center text-amber-400 text-xl">
+            <i class="ph-bold ph-barcode"></i>
           </div>
-
-          <!-- Role Toggle: Staff In-Charge vs Head of Section (HoS) -->
-          <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-semibold">
-            <span class="text-slate-500 px-2.5 font-mono text-[11px] uppercase">Active Role:</span>
-            <button onclick="setRole('Staff')" id="role-staff" class="px-3.5 py-2 rounded-lg bg-amber-500 text-slate-950 font-bold shadow-sm transition flex items-center gap-1">
-              <i class="ph-bold ph-user-circle-gear"></i> Staff In-Charge
-            </button>
-            <button onclick="setRole('HoS')" id="role-hos" class="px-3.5 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1">
-              <i class="ph-bold ph-seal-check"></i> Head of Section (HoS)
-            </button>
-          </div>
-
-          <!-- Excel Upload & Extraction Actions -->
-          <div class="flex flex-wrap items-center gap-2">
-            <button onclick="downloadSampleTemplate()" class="px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center gap-1.5 transition">
-              <i class="ph-bold ph-download-simple text-amber-600 text-sm"></i>
-              Template (.xlsx)
-            </button>
-            <input type="file" id="excelInput" accept=".xlsx, .xls" class="hidden" onchange="handleExcelUpload(event)">
-            <button onclick="document.getElementById('excelInput').click()" class="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs font-semibold text-white flex items-center gap-1.5 shadow-sm transition">
-              <i class="ph-bold ph-file-arrow-up text-amber-400 text-sm"></i>
-              Upload ME Roster
-            </button>
-            <button onclick="exportPendingList()" class="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-xs font-semibold text-white flex items-center gap-1.5 shadow-sm transition">
-              <i class="ph-bold ph-file-arrow-down text-sm"></i>
-              Extract Pending List
-            </button>
+          <div>
+            <h3 class="font-bold text-sm sm:text-base text-white">Rapid Roll Number Certification</h3>
+            <p id="rapid-desc" class="text-xs text-slate-400 font-mono">Enter roll number to mark your assigned record(s)</p>
           </div>
         </div>
+        <form onsubmit="handleQuickCertify(event)" class="flex gap-2 w-full md:w-auto">
+          <input type="text" id="quickRollInput" placeholder="Roll No (e.g. 24ME201)" required
+            class="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-400 text-xs sm:text-sm font-mono uppercase outline-none focus:border-amber-400 w-full sm:w-60"/>
+          <button type="submit" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs sm:text-sm transition flex items-center gap-1">
+            Certify Roll
+          </button>
+        </form>
+      </div>
 
-        <!-- Fast Roll Number Certification Box (Workshop Speed Style) -->
-        <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-sm border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-400/30 flex items-center justify-center text-amber-400 text-xl">
-              <i class="ph-bold ph-barcode"></i>
-            </div>
-            <div>
-              <h3 class="font-bold text-sm sm:text-base text-white">Rapid Roll Number Certification</h3>
-              <p class="text-xs text-slate-400 font-mono">Type student roll number and press Enter to mark all 6 records</p>
-            </div>
-          </div>
-          <form onsubmit="handleQuickCertify(event)" class="flex gap-2 w-full md:w-auto">
-            <input type="text" id="quickRollInput" placeholder="Enter Roll (e.g. 24ME105)" required
-              class="px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-400 text-xs sm:text-sm font-mono uppercase outline-none focus:border-amber-400 w-full sm:w-64"/>
-            <button type="submit" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center gap-1">
-              Mark Complete
-            </button>
-          </form>
+      <!-- Search & Filters -->
+      <div class="flex flex-col sm:flex-row justify-between gap-3 items-center">
+        <div class="relative w-full sm:w-80">
+          <i class="ph-bold ph-magnifying-glass absolute left-3 top-2.5 text-slate-400"></i>
+          <input type="text" id="filterInput" oninput="renderTable()" placeholder="Search by roll no or name..."
+            class="w-full pl-9 pr-3 py-2 border rounded-xl text-xs sm:text-sm border-slate-200 outline-none focus:ring-2 focus:ring-amber-500 bg-white font-mono"/>
         </div>
-
-        <!-- Filter Bar -->
-        <div class="flex flex-col sm:flex-row justify-between gap-3 items-center">
-          <div class="relative w-full sm:w-80">
-            <i class="ph-bold ph-magnifying-glass absolute left-3 top-2.5 text-slate-400"></i>
-            <input type="text" id="filterInput" oninput="renderTable()" placeholder="Search roll no or student name..."
-              class="w-full pl-9 pr-3 py-2 border rounded-xl text-xs sm:text-sm border-slate-200 outline-none focus:ring-2 focus:ring-amber-500 bg-white font-mono"/>
-          </div>
-          <div class="flex items-center gap-2 text-xs font-semibold text-slate-600">
-            <span>Filter Status:</span>
-            <select id="certFilter" onchange="renderTable()" class="border border-slate-200 rounded-lg px-3 py-1.5 bg-white text-xs outline-none">
-              <option value="ALL">All Students</option>
-              <option value="STAFF_PENDING">Pending Staff Sign</option>
-              <option value="HOS_PENDING">Pending HoS Final Sign</option>
-              <option value="FULLY_CERTIFIED">Fully Certified (Staff + HoS)</option>
-            </select>
-          </div>
+        <div class="flex items-center gap-2 text-xs font-semibold text-slate-600">
+          <span>Filter:</span>
+          <select id="certFilter" onchange="renderTable()" class="border border-slate-200 rounded-lg px-3 py-1.5 bg-white text-xs outline-none">
+            <option value="ALL">All Students</option>
+            <option value="MY_PENDING">Pending My Approval</option>
+            <option value="HOD_PENDING">Pending HOD Vipin VP</option>
+            <option value="FULLY_CERTIFIED">Fully Completed</option>
+          </select>
         </div>
+      </div>
 
-        <!-- 6 Requirements Checklist Table -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs sm:text-sm">
-              <thead class="bg-slate-900 text-white uppercase text-[11px] font-mono tracking-wider">
-                <tr id="table-headers">
-                  <!-- Dynamic Headers per batch -->
-                </tr>
-              </thead>
-              <tbody id="studentTableBody" class="divide-y divide-slate-100">
-                <!-- Records injected by JS -->
-              </tbody>
-            </table>
-          </div>
-          <div id="noDataRow" class="hidden p-8 text-center text-slate-400 text-xs sm:text-sm">
-            No students found matching your criteria. Use "Upload ME Roster" to import candidates.
-          </div>
+      <!-- Student Records Table -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs sm:text-sm">
+            <thead class="bg-slate-900 text-white uppercase text-[11px] font-mono tracking-wider">
+              <tr id="table-headers">
+                <!-- Headers dynamically populated -->
+              </tr>
+            </thead>
+            <tbody id="studentTableBody" class="divide-y divide-slate-100">
+              <!-- Student rows rendered here -->
+            </tbody>
+          </table>
         </div>
-
+        <div id="noDataRow" class="hidden p-8 text-center text-slate-400 text-xs sm:text-sm font-mono">
+          No records found. Click "Upload ME List" to import candidates.
+        </div>
       </div>
 
     </div>
@@ -233,11 +233,11 @@
           <i class="ph-bold ph-identification-card"></i>
         </div>
         <span class="text-[10px] font-mono font-bold tracking-widest text-slate-400 uppercase">Mechanical Engineering Department</span>
-        <h2 class="text-xl font-bold text-slate-900 mt-1">Student Record Certification Status</h2>
-        <p class="text-xs text-slate-500 mt-1">Verify completion of all 6 prescribed laboratory records, Staff certification, and final HoS clearance.</p>
+        <h2 class="text-xl font-black text-slate-900 mt-1">Student Record Certification Status</h2>
+        <p class="text-xs text-slate-500 mt-1 font-mono">Check subject-wise faculty clearance & HOD Vipin VP's final certification</p>
 
         <form onsubmit="searchStudent(event)" class="mt-6 flex gap-2">
-          <input type="text" id="studSearchRoll" required placeholder="Enter Register / Roll No (e.g. 24ME201)"
+          <input type="text" id="studSearchRoll" required placeholder="Enter Roll Number (e.g. 24ME201)"
             class="flex-1 px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 outline-none uppercase font-mono text-sm font-bold tracking-wide" />
           <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold px-6 py-3 rounded-xl transition text-xs sm:text-sm flex items-center gap-1.5 shadow-sm">
             <i class="ph-bold ph-magnifying-glass"></i> Check
@@ -254,27 +254,26 @@
             <span id="res-year" class="inline-block mt-1 text-[11px] px-2.5 py-0.5 rounded font-mono font-bold bg-slate-100 text-slate-700">-</span>
           </div>
           <div class="text-right">
-            <span id="res-hos-badge" class="px-3 py-1 rounded-full text-xs font-bold inline-block">HoS Pending</span>
+            <span id="res-hod-badge" class="px-3 py-1 rounded-full text-xs font-mono font-bold inline-block">HOD Pending</span>
           </div>
         </div>
 
         <div>
           <h4 class="text-xs font-mono font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-            <i class="ph-bold ph-check-square-offset text-amber-600"></i> Prescribed Practical Components (6 Items)
+            <i class="ph-bold ph-check-square-offset text-amber-600"></i> Subject-Wise Faculty Clearance (6 Items)
           </h4>
           <div id="res-items-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs font-mono">
-            <!-- Items populated via JS -->
+            <!-- Dynamic Items -->
           </div>
         </div>
 
-        <div class="border-t pt-4 grid grid-cols-2 gap-4 text-xs font-mono">
-          <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
-            <p class="font-bold text-slate-500 uppercase text-[10px]">Staff In-Charge Sign</p>
-            <p id="res-staff-status" class="mt-1 font-bold text-slate-800 text-xs">-</p>
+        <div class="border-t pt-4 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs font-mono flex items-center justify-between">
+          <div>
+            <p class="font-bold text-slate-500 uppercase text-[10px]">Head of Department (HoD / HoS)</p>
+            <p class="font-bold text-slate-800 text-sm mt-0.5">VIPIN VP</p>
           </div>
-          <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
-            <p class="font-bold text-slate-500 uppercase text-[10px]">Head of Section (HoS)</p>
-            <p id="res-hos-status" class="mt-1 font-bold text-slate-800 text-xs">-</p>
+          <div id="res-hod-status" class="text-right font-bold text-slate-700 text-xs">
+            -
           </div>
         </div>
       </div>
@@ -286,171 +285,218 @@
 
   </main>
 
-  <!-- Footer -->
-  <footer class="mt-auto py-4 bg-slate-900 text-slate-400 text-center text-xs border-t border-slate-800 font-mono">
-    Department of Mechanical Engineering • Academic Record Certification Portal
-  </footer>
-
   <script>
-    // Exact Mechanical Engineering Lab Curriculum Schema
-    const ME_YEAR_CONFIGS = {
-      "1st": {
-        title: "1st Year ME",
-        items: [
-          "BASIC WORKSHOP",
-          "ENGG GRAPHICS (ME)",
-          "APPLIED PHYSICS LAB",
-          "APPLIED CHEM LAB",
-          "COMPUTING PRACTICUM",
-          "COMPLIANCE REPORT"
-        ]
-      },
-      "2nd": {
-        title: "2nd Year ME",
-        items: [
-          "MT LAB",
-          "EEE LAB",
-          "ADD CAD LAB",
-          "WORKSHOP",
-          "INTERNSHIP REPORT",
-          "COMPLIANCE REPORT"
-        ]
-      },
-      "3rd": {
-        title: "3rd Year ME",
-        items: [
-          "HM LAB",
-          "AE LAB",
-          "MACHINE SHOP",
-          "SEMINAR REPORT",
-          "INTERNSHIP REPORT",
-          "COMPLIANCE REPORT"
-        ]
-      }
+    // Faculty Configuration & Subject Allocation
+    const ALLOCATIONS = {
+      "2nd": [
+        { code: "MT LAB", name: "MT LAB", staff: "Maneesh T" },
+        { code: "EEE LAB", name: "EEE LAB", staff: "Junaid AP" },
+        { code: "ADD CAD LAB", name: "ADD CAD LAB", staff: "Ashique NK" },
+        { code: "WORKSHOP", name: "WORKSHOP", staff: "Sujith N" },
+        { code: "INTERNSHIP REPORT", name: "INTERNSHIP REPORT", staff: "Ashique NK" },
+        { code: "COMPLIANCE REPORT", name: "COMPLIANCE REPORT", staff: "Ashique NK" }
+      ],
+      "3rd": [
+        { code: "HM LAB", name: "HM LAB", staff: "Shahinsha" },
+        { code: "AE LAB", name: "AE LAB", staff: "Hiba Sherin" },
+        { code: "MACHINE SHOP", name: "MACHINE SHOP", staff: "Krishnadas PE" },
+        { code: "SEMINAR REPORT", name: "Seminar Report", staff: "Ashique NK" },
+        { code: "INTERNSHIP REPORT", name: "INTERNSHIP REPORT", staff: "Maneesh T" },
+        { code: "COMPLIANCE REPORT", name: "COMPLIANCE REPORT", staff: "Maneesh T" }
+      ]
     };
 
+    let currentUser = null; // { name: "Maneesh T", role: "Staff" | "HOD" | "Admin" }
     let currentYear = "2nd";
-    let activeRole = "Staff"; // "Staff" or "HoS"
 
-    // Default Mechanical Engineering Sample Records
-    const defaultMechData = [
+    // Mock Sample Data
+    const defaultData = [
       {
         roll: "24ME201",
         name: "Aarav Nair",
         year: "2nd",
         items: { "MT LAB": true, "EEE LAB": true, "ADD CAD LAB": true, "WORKSHOP": true, "INTERNSHIP REPORT": true, "COMPLIANCE REPORT": true },
-        staffCertified: true,
-        hosCertified: true
+        hodCertified: true
       },
       {
         roll: "24ME202",
         name: "Vishnu Prasad",
         year: "2nd",
         items: { "MT LAB": true, "EEE LAB": true, "ADD CAD LAB": false, "WORKSHOP": true, "INTERNSHIP REPORT": false, "COMPLIANCE REPORT": false },
-        staffCertified: false,
-        hosCertified: false
+        hodCertified: false
       },
       {
         roll: "23ME301",
         name: "Muhammed Fayis",
         year: "3rd",
         items: { "HM LAB": true, "AE LAB": true, "MACHINE SHOP": true, "SEMINAR REPORT": true, "INTERNSHIP REPORT": true, "COMPLIANCE REPORT": true },
-        staffCertified: true,
-        hosCertified: false
+        hodCertified: false
       }
     ];
 
     function getStore() {
-      const data = localStorage.getItem("mech_records_data");
+      const data = localStorage.getItem("mech_dept_records_v3");
       if (!data) {
-        localStorage.setItem("mech_records_data", JSON.stringify(defaultMechData));
-        return defaultMechData;
+        localStorage.setItem("mech_dept_records_v3", JSON.stringify(defaultData));
+        return defaultData;
       }
       return JSON.parse(data);
     }
 
     function saveStore(data) {
-      localStorage.setItem("mech_records_data", JSON.stringify(data));
+      localStorage.setItem("mech_dept_records_v3", JSON.stringify(data));
       renderTable();
     }
 
-    function setRole(role) {
-      activeRole = role;
-      const bStaff = document.getElementById("role-staff");
-      const bHos = document.getElementById("role-hos");
-      if (role === "Staff") {
-        bStaff.className = "px-3.5 py-2 rounded-lg bg-amber-500 text-slate-950 font-bold shadow-sm transition flex items-center gap-1";
-        bHos.className = "px-3.5 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1";
-      } else {
-        bHos.className = "px-3.5 py-2 rounded-lg bg-amber-500 text-slate-950 font-bold shadow-sm transition flex items-center gap-1";
-        bStaff.className = "px-3.5 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1";
+    // Login Handling
+    function handleLogin(e) {
+      e.preventDefault();
+      const staff = document.getElementById("loginStaffSelect").value;
+      const pin = document.getElementById("loginPin").value.trim();
+
+      if (pin !== "1234") {
+        alert("Incorrect PIN. Please use default PIN: 1234");
+        return;
       }
+
+      let role = "Staff";
+      if (staff === "HOD VIPIN VP") role = "HOD";
+      if (staff === "Admin") role = "Admin";
+
+      currentUser = { name: staff, role: role };
+      sessionStorage.setItem("mech_user", JSON.stringify(currentUser));
+      initUserSession();
+    }
+
+    function logoutUser() {
+      currentUser = null;
+      sessionStorage.removeItem("mech_user");
+      document.getElementById("staff-dashboard").classList.add("hidden");
+      document.getElementById("login-modal").classList.remove("hidden");
+      document.getElementById("session-info").classList.add("hidden");
+      document.getElementById("nav-staff").innerHTML = '<i class="ph-bold ph-lock-key"></i> Staff / HOD Login';
+    }
+
+    function initUserSession() {
+      if (!currentUser) return;
+      document.getElementById("login-modal").classList.add("hidden");
+      document.getElementById("staff-dashboard").classList.remove("hidden");
+      document.getElementById("session-info").classList.remove("hidden");
+      document.getElementById("active-user-name").innerText = currentUser.name;
+      document.getElementById("active-user-role").innerText = `(${currentUser.role})`;
+      document.getElementById("nav-staff").innerHTML = '<i class="ph-bold ph-gauge"></i> Staff Console';
+
+      // Set default year based on user assignment
+      if (currentUser.name === "Shahinsha" || currentUser.name === "Hiba Sherin" || currentUser.name === "Krishnadas PE") {
+        currentYear = "3rd";
+      }
+
+      updateBatchButtons();
       renderTable();
     }
 
+    // Switch Year (2nd vs 3rd)
+    function setYear(yr) {
+      currentYear = yr;
+      updateBatchButtons();
+      renderTable();
+    }
+
+    function updateBatchButtons() {
+      const b2 = document.getElementById("btn-yr-2nd");
+      const b3 = document.getElementById("btn-yr-3rd");
+      if (currentYear === "2nd") {
+        b2.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-amber-500 text-slate-950 shadow-sm";
+        b3.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:bg-slate-100";
+      } else {
+        b3.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-amber-500 text-slate-950 shadow-sm";
+        b2.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:bg-slate-100";
+      }
+
+      // Update instructions
+      const notice = document.getElementById("staff-scope-notice");
+      if (currentUser.role === "HOD") {
+        notice.innerText = "HOD View: Review all faculty marks and execute final certification";
+      } else if (currentUser.role === "Admin") {
+        notice.innerText = "Admin View: Full roster and permission control";
+      } else {
+        notice.innerText = `Logged in as ${currentUser.name}: Can toggle assigned lab records`;
+      }
+    }
+
+    // Switch view (Staff vs Student)
     function switchView(view) {
-      const staffSec = document.getElementById("staff-section");
-      const studSec = document.getElementById("student-section");
+      const staffDash = document.getElementById("staff-dashboard");
+      const loginModal = document.getElementById("login-modal");
+      const studentSec = document.getElementById("student-section");
       const navStaff = document.getElementById("nav-staff");
       const navStud = document.getElementById("nav-student");
 
       if (view === "staff") {
-        staffSec.classList.remove("hidden");
-        studSec.classList.add("hidden");
-        navStaff.className = "px-4 py-2 rounded-lg transition-all bg-amber-500 text-slate-950 font-bold shadow flex items-center gap-1.5";
-        navStud.className = "px-4 py-2 rounded-lg transition-all text-slate-300 hover:text-white flex items-center gap-1.5";
-        renderTable();
+        studentSec.classList.add("hidden");
+        navStaff.className = "px-3.5 py-1.5 rounded-lg transition-all bg-amber-500 text-slate-950 font-bold shadow flex items-center gap-1.5";
+        navStud.className = "px-3.5 py-1.5 rounded-lg transition-all text-slate-300 hover:text-white flex items-center gap-1.5";
+
+        if (currentUser) {
+          staffDash.classList.remove("hidden");
+          renderTable();
+        } else {
+          loginModal.classList.remove("hidden");
+        }
       } else {
-        staffSec.classList.add("hidden");
-        studSec.classList.remove("hidden");
-        navStud.className = "px-4 py-2 rounded-lg transition-all bg-amber-500 text-slate-950 font-bold shadow flex items-center gap-1.5";
-        navStaff.className = "px-4 py-2 rounded-lg transition-all text-slate-300 hover:text-white flex items-center gap-1.5";
+        staffDash.classList.add("hidden");
+        loginModal.classList.add("hidden");
+        studentSec.classList.remove("hidden");
+        navStud.className = "px-3.5 py-1.5 rounded-lg transition-all bg-amber-500 text-slate-950 font-bold shadow flex items-center gap-1.5";
+        navStaff.className = "px-3.5 py-1.5 rounded-lg transition-all text-slate-300 hover:text-white flex items-center gap-1.5";
       }
-    }
-
-    function selectYear(yr) {
-      currentYear = yr;
-      document.getElementById("year-selection-card").classList.add("hidden");
-      document.getElementById("year-dashboard").classList.remove("hidden");
-      document.getElementById("active-year-badge").innerText = `${yr} Year ME`;
-      renderTable();
-    }
-
-    function backToYearSelection() {
-      document.getElementById("year-dashboard").classList.add("hidden");
-      document.getElementById("year-selection-card").classList.remove("hidden");
     }
 
     // Render Table
     function renderTable() {
-      const config = ME_YEAR_CONFIGS[currentYear];
+      if (!currentUser) return;
+      const subjects = ALLOCATIONS[currentYear];
       const headerRow = document.getElementById("table-headers");
 
       let headerHTML = `
         <th class="p-3">Roll No</th>
         <th class="p-3">Student Name</th>
       `;
-      config.items.forEach(item => {
-        headerHTML += `<th class="p-3 text-center tracking-tight text-[10px] sm:text-xs">${item}</th>`;
+
+      subjects.forEach(sub => {
+        const isMine = currentUser.role === "Admin" || currentUser.role === "HOD" || sub.staff.toLowerCase() === currentUser.name.toLowerCase();
+        headerHTML += `
+          <th class="p-3 text-center ${isMine ? 'text-amber-400 bg-slate-800' : 'text-slate-300'}">
+            <div class="font-bold text-[11px]">${sub.name}</div>
+            <div class="text-[9px] font-normal text-slate-400 font-sans tracking-normal">${sub.staff}</div>
+          </th>
+        `;
       });
+
       headerHTML += `
-        <th class="p-3 text-center">Staff Sign</th>
-        <th class="p-3 text-center">HoS Sign</th>
+        <th class="p-3 text-center text-amber-300">
+          <div>HOD VIPIN VP</div>
+          <div class="text-[9px] font-normal text-slate-400 font-sans tracking-normal">Final Certification</div>
+        </th>
       `;
       headerRow.innerHTML = headerHTML;
 
       const store = getStore();
       const search = (document.getElementById("filterInput") ? document.getElementById("filterInput").value : "").trim().toLowerCase();
-      const statusF = document.getElementById("certFilter") ? document.getElementById("certFilter").value : "ALL";
+      const filterMode = document.getElementById("certFilter") ? document.getElementById("certFilter").value : "ALL";
 
       const filtered = store.filter(s => {
         if (s.year !== currentYear) return false;
         const matchesSearch = s.roll.toLowerCase().includes(search) || s.name.toLowerCase().includes(search);
         if (!matchesSearch) return false;
 
-        if (statusF === "HOS_PENDING") return s.staffCertified && !s.hosCertified;
-        if (statusF === "STAFF_PENDING") return !s.staffCertified;
-        if (statusF === "FULLY_CERTIFIED") return s.staffCertified && s.hosCertified;
+        if (filterMode === "MY_PENDING") {
+          // Find if any subject assigned to current user is false
+          const mySubjects = subjects.filter(sub => currentUser.role === "Admin" || currentUser.role === "HOD" || sub.staff.toLowerCase() === currentUser.name.toLowerCase());
+          return mySubjects.some(sub => !s.items || s.items[sub.code] !== true);
+        }
+        if (filterMode === "HOD_PENDING") return !s.hodCertified;
+        if (filterMode === "FULLY_CERTIFIED") return s.hodCertified;
         return true;
       });
 
@@ -473,43 +519,33 @@
           <td class="p-3 font-sans font-semibold text-slate-800 whitespace-nowrap">${s.name}</td>
         `;
 
-        // 6 Checklist items
-        config.items.forEach(item => {
-          const isDone = s.items && s.items[item] === true;
+        // 6 Subject Checkboxes
+        subjects.forEach(sub => {
+          const isDone = s.items && s.items[sub.code] === true;
+          const canEdit = currentUser.role === "Admin" || currentUser.role === "HOD" || sub.staff.toLowerCase() === currentUser.name.toLowerCase();
+
           cellsHTML += `
-            <td class="p-3 text-center">
+            <td class="p-3 text-center ${canEdit ? 'bg-amber-50/20' : ''}">
               <input type="checkbox" ${isDone ? "checked" : ""} 
-                ${activeRole !== 'Staff' ? 'disabled' : ''}
-                onchange="toggleItem('${s.roll}', '${item}', this.checked)"
-                class="w-4 h-4 text-amber-600 rounded border-slate-300 focus:ring-amber-500 cursor-pointer disabled:opacity-60" />
+                ${!canEdit ? 'disabled title="Only ' + sub.staff + ' can edit this lab"' : ''}
+                onchange="toggleItem('${s.roll}', '${sub.code}', this.checked)"
+                class="w-4 h-4 text-amber-600 rounded border-slate-300 focus:ring-amber-500 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" />
             </td>
           `;
         });
 
-        // Staff Sign Button
+        // HOD VIPIN VP Certification Button
+        const canSignHOD = currentUser.role === "HOD" || currentUser.role === "Admin";
         cellsHTML += `
           <td class="p-3 text-center font-sans">
-            <button onclick="toggleStaffSign('${s.roll}')" 
-              class="px-2.5 py-1 rounded text-xs font-bold transition ${
-                s.staffCertified 
-                  ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' 
-                  : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
-              }">
-              ${s.staffCertified ? '✓ Staff Signed' : 'Pending'}
-            </button>
-          </td>
-        `;
-
-        // HoS Sign Button
-        cellsHTML += `
-          <td class="p-3 text-center font-sans">
-            <button onclick="toggleHoSSign('${s.roll}')" 
-              class="px-2.5 py-1 rounded text-xs font-bold transition ${
-                s.hosCertified 
-                  ? 'bg-indigo-100 text-indigo-900 border border-indigo-200 hover:bg-indigo-200' 
-                  : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
-              }">
-              ${s.hosCertified ? '✓ HoS Certified' : 'Pending'}
+            <button onclick="toggleHODCertification('${s.roll}')" 
+              ${!canSignHOD ? 'disabled title="Only HOD VIPIN VP can mark this"' : ''}
+              class="px-3 py-1 rounded text-xs font-bold transition ${
+                s.hodCertified 
+                  ? 'bg-emerald-100 text-emerald-900 border border-emerald-300 hover:bg-emerald-200' 
+                  : 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200'
+              } disabled:opacity-60 disabled:cursor-not-allowed">
+              ${s.hodCertified ? '✓ Certified' : 'Pending'}
             </button>
           </td>
         `;
@@ -519,54 +555,51 @@
       });
     }
 
-    function toggleItem(roll, item, isChecked) {
+    // Toggle Checkbox
+    function toggleItem(roll, itemCode, isChecked) {
       let store = getStore();
       store = store.map(s => {
         if (s.roll === roll) {
           s.items = s.items || {};
-          s.items[item] = isChecked;
-          const config = ME_YEAR_CONFIGS[s.year];
-          const allDone = config.items.every(k => s.items[k] === true);
-          if (allDone) {
-            s.staffCertified = true;
-          }
+          s.items[itemCode] = isChecked;
         }
         return s;
       });
       saveStore(store);
     }
 
-    function toggleStaffSign(roll) {
+    // Toggle HOD Certification
+    function toggleHODCertification(roll) {
+      if (currentUser.role !== "HOD" && currentUser.role !== "Admin") {
+        alert("Access Denied: Only HOD VIPIN VP can certify records.");
+        return;
+      }
+
       let store = getStore();
       store = store.map(s => {
         if (s.roll === roll) {
-          s.staffCertified = !s.staffCertified;
-          if (!s.staffCertified) s.hosCertified = false;
-        }
-        return s;
-      });
-      saveStore(store);
-    }
+          // Check if all 6 labs are marked
+          const subjects = ALLOCATIONS[s.year];
+          const pending = subjects.filter(sub => !s.items || s.items[sub.code] !== true);
 
-    function toggleHoSSign(roll) {
-      let store = getStore();
-      store = store.map(s => {
-        if (s.roll === roll) {
-          if (!s.staffCertified && !s.hosCertified) {
-            alert("Staff sign-off is still pending for this student.");
+          if (!s.hodCertified && pending.length > 0) {
+            const pendingNames = pending.map(p => `${p.name} (${p.staff})`).join("\n - ");
+            if (!confirm(`Warning: The following records are still pending:\n - ${pendingNames}\n\nDo you want to certify anyway?`)) {
+              return s;
+            }
           }
-          s.hosCertified = !s.hosCertified;
+          s.hodCertified = !s.hodCertified;
         }
         return s;
       });
       saveStore(store);
     }
 
-    // Fast roll number entry
+    // Rapid Certification by Roll Number
     function handleQuickCertify(e) {
       e.preventDefault();
-      const rollInput = document.getElementById("quickRollInput");
-      const roll = rollInput.value.trim().toUpperCase();
+      const input = document.getElementById("quickRollInput");
+      const roll = input.value.trim().toUpperCase();
       let store = getStore();
       const student = store.find(s => s.roll.toUpperCase() === roll && s.year === currentYear);
 
@@ -575,40 +608,54 @@
         return;
       }
 
-      if (activeRole === "Staff") {
-        const config = ME_YEAR_CONFIGS[currentYear];
+      const subjects = ALLOCATIONS[currentYear];
+
+      if (currentUser.role === "HOD") {
+        // HOD approves all
         student.items = student.items || {};
-        config.items.forEach(item => { student.items[item] = true; });
-        student.staffCertified = true;
-        alert(`All 6 records marked & Staff signed for: ${student.name} (${student.roll})`);
+        subjects.forEach(sub => { student.items[sub.code] = true; });
+        student.hodCertified = true;
+        alert(`HOD VIPIN VP certified all records for: ${student.name} (${student.roll})`);
+      } else if (currentUser.role === "Admin") {
+        student.items = student.items || {};
+        subjects.forEach(sub => { student.items[sub.code] = true; });
+        student.hodCertified = true;
+        alert(`Admin certified all records for: ${student.name} (${student.roll})`);
       } else {
-        if (!student.staffCertified) {
-          if (!confirm("Staff has not marked this student yet. Mark HoS certification anyway?")) {
-            return;
+        // Only mark items assigned to this staff
+        student.items = student.items || {};
+        let markedCount = 0;
+        subjects.forEach(sub => {
+          if (sub.staff.toLowerCase() === currentUser.name.toLowerCase()) {
+            student.items[sub.code] = true;
+            markedCount++;
           }
+        });
+        if (markedCount > 0) {
+          alert(`Marked ${markedCount} assigned subject(s) complete for: ${student.name} (${student.roll}) by ${currentUser.name}`);
+        } else {
+          alert(`Notice: You (${currentUser.name}) do not have assigned labs in ${currentYear} Year ME.`);
         }
-        student.hosCertified = true;
-        alert(`HoS Certification complete for: ${student.name} (${student.roll})`);
       }
 
       saveStore(store);
-      rollInput.value = "";
+      input.value = "";
     }
 
-    // 1. Download Sample Excel Template
+    // Download Sample Template
     function downloadSampleTemplate() {
       const templateData = [
-        { "Roll number": "24ME201", "Name": "Rahul K" },
-        { "Roll number": "24ME202", "Name": "Muhammed S" },
-        { "Roll number": "24ME203", "Name": "Vishnu M" }
+        { "Roll number": "24ME201", "Name": "Aarav Nair" },
+        { "Roll number": "24ME202", "Name": "Vishnu Prasad" },
+        { "Roll number": "24ME203", "Name": "Basil Joy" }
       ];
       const ws = XLSX.utils.json_to_sheet(templateData);
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "ME_Students");
-      XLSX.writeFile(wb, `Mechanical_Dept_Template_${currentYear}_Year.xlsx`);
+      XLSX.utils.book_append_sheet(wb, ws, "ME_Roster");
+      XLSX.writeFile(wb, `ME_Student_Template_${currentYear}_Year.xlsx`);
     }
 
-    // 2. Upload Excel (.xlsx)
+    // Upload Excel File
     function handleExcelUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -622,7 +669,7 @@
 
         let store = getStore();
         let addedCount = 0;
-        const config = ME_YEAR_CONFIGS[currentYear];
+        const subjects = ALLOCATIONS[currentYear];
 
         rows.forEach(r => {
           const roll = (r["Roll number"] || r["Roll Number"] || r["Roll No"] || r["roll"] || "").toString().trim().toUpperCase();
@@ -632,15 +679,14 @@
             const exists = store.some(s => s.roll === roll && s.year === currentYear);
             if (!exists) {
               const defaultItems = {};
-              config.items.forEach(it => defaultItems[it] = false);
+              subjects.forEach(sub => defaultItems[sub.code] = false);
 
               store.push({
                 roll,
                 name,
                 year: currentYear,
                 items: defaultItems,
-                staffCertified: false,
-                hosCertified: false
+                hodCertified: false
               });
               addedCount++;
             }
@@ -648,44 +694,44 @@
         });
 
         saveStore(store);
-        alert(`Successfully imported ${addedCount} students into ${currentYear} Year Mechanical list.`);
+        alert(`Successfully imported ${addedCount} students into ${currentYear} Year ME list.`);
         event.target.value = "";
       };
       reader.readAsArrayBuffer(file);
     }
 
-    // 3. Extract Pending List to Excel
+    // Extract Pending List to Excel
     function exportPendingList() {
       const store = getStore();
-      const config = ME_YEAR_CONFIGS[currentYear];
+      const subjects = ALLOCATIONS[currentYear];
       const pendingRows = [];
 
       store.filter(s => s.year === currentYear).forEach(s => {
-        const pendingItems = config.items.filter(it => !s.items || s.items[it] !== true);
-        const isPending = pendingItems.length > 0 || !s.staffCertified || !s.hosCertified;
+        const uncompleted = subjects.filter(sub => !s.items || s.items[sub.code] !== true);
+        const isPending = uncompleted.length > 0 || !s.hodCertified;
 
         if (isPending) {
+          const pendingWithStaff = uncompleted.map(u => `${u.name} [${u.staff}]`).join("; ");
           pendingRows.push({
             "Department": "Mechanical Engineering",
             "Roll Number": s.roll,
             "Name": s.name,
-            "Batch / Year": `${currentYear} Year ME`,
-            "Pending Lab Records": pendingItems.join(", ") || "All labs marked",
-            "Staff Sign Status": s.staffCertified ? "Signed" : "Pending",
-            "HoS Certification": s.hosCertified ? "Certified" : "Pending"
+            "Year": `${currentYear} Year ME`,
+            "Pending Records & Faculty": pendingWithStaff || "All Lab Records Completed",
+            "HOD VIPIN VP Certification": s.hodCertified ? "Certified" : "Pending"
           });
         }
       });
 
       if (pendingRows.length === 0) {
-        alert(`No pending certifications for ${currentYear} Year ME. All students are certified!`);
+        alert(`Great! All students in ${currentYear} Year ME are fully certified by HOD VIPIN VP.`);
         return;
       }
 
       const ws = XLSX.utils.json_to_sheet(pendingRows);
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Pending List");
-      XLSX.writeFile(wb, `ME_Dept_Pending_Records_${currentYear}_Year_${new Date().toISOString().slice(0,10)}.xlsx`);
+      XLSX.utils.book_append_sheet(wb, ws, "Pending_Records");
+      XLSX.writeFile(wb, `ME_Pending_Records_${currentYear}_Year_${new Date().toISOString().slice(0,10)}.xlsx`);
     }
 
     // Student Lookup Portal
@@ -706,42 +752,51 @@
         document.getElementById("res-roll").innerText = student.roll;
         document.getElementById("res-year").innerText = `${student.year} Year Mechanical Engineering`;
 
-        const hosBadge = document.getElementById("res-hos-badge");
-        if (student.hosCertified) {
-          hosBadge.innerText = "✓ HoS Certified";
-          hosBadge.className = "px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-100 text-emerald-900 border border-emerald-300";
+        const hodBadge = document.getElementById("res-hod-badge");
+        const hodStatus = document.getElementById("res-hod-status");
+
+        if (student.hodCertified) {
+          hodBadge.innerText = "✓ Certified by HOD VIPIN VP";
+          hodBadge.className = "px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-100 text-emerald-900 border border-emerald-300";
+          hodStatus.innerHTML = '<span class="text-emerald-700">✓ CERTIFIED & APPROVED</span>';
         } else {
-          hosBadge.innerText = "HoS Sign Pending";
-          hosBadge.className = "px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100 text-amber-900 border border-amber-300";
+          hodBadge.innerText = "HOD Certification Pending";
+          hodBadge.className = "px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100 text-amber-900 border border-amber-300";
+          hodStatus.innerHTML = '<span class="text-amber-700">PENDING FINAL SIGN-OFF</span>';
         }
 
         const itemsGrid = document.getElementById("res-items-grid");
         itemsGrid.innerHTML = "";
-        const config = ME_YEAR_CONFIGS[student.year] || ME_YEAR_CONFIGS["2nd"];
+        const subjects = ALLOCATIONS[student.year] || ALLOCATIONS["2nd"];
 
-        config.items.forEach(item => {
-          const done = student.items && student.items[item] === true;
+        subjects.forEach(sub => {
+          const done = student.items && student.items[sub.code] === true;
           const div = document.createElement("div");
-          div.className = `p-2.5 rounded-xl border flex items-center justify-between ${
-            done ? 'bg-emerald-50/60 border-emerald-200 text-emerald-950 font-bold' : 'bg-rose-50/60 border-rose-200 text-rose-950'
+          div.className = `p-2.5 rounded-xl border flex flex-col justify-between ${
+            done ? 'bg-emerald-50/70 border-emerald-200 text-emerald-950' : 'bg-rose-50/70 border-rose-200 text-rose-950'
           }`;
           div.innerHTML = `
-            <span>${item}</span>
-            <span>${done ? '✓ Completed' : '✕ Pending'}</span>
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-slate-800">${sub.name}</span>
+              <span class="font-bold text-xs ${done ? 'text-emerald-700' : 'text-rose-700'}">${done ? '✓ Approved' : '✕ Pending'}</span>
+            </div>
+            <div class="text-[10px] text-slate-500 font-sans mt-1">Staff: ${sub.staff}</div>
           `;
           itemsGrid.appendChild(div);
         });
 
-        document.getElementById("res-staff-status").innerText = student.staffCertified ? "✓ Approved by Staff In-Charge" : "Pending Staff Verification";
-        document.getElementById("res-hos-status").innerText = student.hosCertified ? "✓ Final Approval Signed by HoS" : "Pending HoS Clearance";
       } else {
         card.classList.add("hidden");
         notFound.classList.remove("hidden");
       }
     }
 
-    // Default initialization
-    selectYear("2nd");
+    // Auto-restore session from sessionStorage
+    const savedUser = sessionStorage.getItem("mech_user");
+    if (savedUser) {
+      currentUser = JSON.parse(savedUser);
+      initUserSession();
+    }
   </script>
 </body>
 </html>
