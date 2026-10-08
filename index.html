@@ -1,38 +1,1758 @@
-<!DOCTYPE html><html lang="en"><head>  <meta charset="UTF-8">  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>Rough Record Fee Tracker</title>  <style>    :root {      --primary: #1e3a8a;      --accent: #15803d;      --danger: #b91c1c;      --bg: #f8fafc;      --card-bg: #ffffff;      --border: #cbd5e1;    }    body {      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;      background: var(--bg);      margin: 0;      padding: 16px;      color: #0f172a;    }    .container { max-width: 900px; margin: 0 auto; }    h1 { font-size: 22px; margin: 0 0 4px 0; }    .subtitle { color: #64748b; font-size: 13px; margin-bottom: 16px; }    .card {      background: var(--card-bg);      border-radius: 8px;      padding: 14px 18px;      margin-bottom: 14px;      border: 1px solid var(--border);      box-shadow: 0 1px 3px rgba(0,0,0,0.06);    }    .flex { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }    .radio-group label {      cursor: pointer;      font-weight: 600;      font-size: 14px;      margin-right: 14px;      display: inline-flex;      align-items: center;      gap: 6px;    }    input[type="text"] {      padding: 9px 12px;      border: 1.5px solid var(--border);      border-radius: 6px;      font-size: 14px;      outline: none;    }    input[type="text"]:focus { border-color: var(--primary); }    .btn {      padding: 8px 14px;      border: none;      border-radius: 6px;      font-weight: 600;      font-size: 13px;      cursor: pointer;      display: inline-flex;      align-items: center;      gap: 6px;    }    .btn-primary { background: var(--primary); color: white; }    .btn-accent { background: var(--accent); color: white; }    .btn-outline { background: white; border: 1px solid var(--border); color: #334155; }    .btn-outline:hover { background: #f1f5f9; }    .btn-danger { background: #fee2e2; color: var(--danger); border: 1px solid #fca5a5; }    .badge {      display: inline-block;      padding: 3px 8px;      border-radius: 4px;      font-size: 12px;      font-weight: bold;    }    .badge-paid { background: #dcfce7; color: #15803d; }    .badge-pending { background: #fee2e2; color: #b91c1c; }    .feedback { font-size: 13px; font-weight: 600; min-height: 18px; margin-top: 6px; }    table {      width: 100%;      border-collapse: collapse;      margin-top: 14px;      font-size: 13px;    }    th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; }    th { background: #f1f5f9; }    @media print {      body { background: white; padding: 0; }      .no-print { display: none !important; }      .card { border: none; box-shadow: none; padding: 0; }      th, td { border: 1px solid #475569; }    }  </style></head><body>
-<div class="container">  <div class="no-print">    <h1>Rough Record Fee Manager</h1>    <div class="subtitle">Real-time payment tracking & daily pending list export.</div>
-    <!-- Semester Switcher -->    <div class="card flex" style="background: #eef2ff; border-color: #c7d2fe; justify-content: space-between;">      <div class="flex">        <span style="font-weight: bold; font-size: 14px;">Target Semester:</span>        <div class="radio-group">          <label><input type="radio" name="sem" value="Sem 3" checked onchange="switchSem('Sem 3')"> Semester 3</label>          <label><input type="radio" name="sem" value="Sem 5" onchange="switchSem('Sem 5')"> Semester 5</label>        </div>      </div>      <div>        <button class="btn btn-outline" style="font-size: 12px;" onclick="downloadTemplate()">⬇ Download CSV Template</button>      </div>    </div>
-    <!-- Quick Roll Entry -->    <div class="card">      <h4 style="margin: 0 0 8px 0;">Record Payment by Roll Number</h4>      <div class="flex">        <input type="text" id="rollInput" placeholder="Enter Roll Number & press Enter" autofocus style="width: 260px;" onkeydown="handleKey(event)">        <button class="btn btn-accent" onclick="markPaid()">Mark Paid</button>      </div>      <div id="statusAlert" class="feedback"></div>    </div>
-    <!-- Upload Section -->    <div class="card">      <div class="flex" style="justify-content: space-between;">        <span style="font-weight: 600; font-size: 14px;" id="uploadSectionHeader">Student Roster: Semester 3</span>        <div class="flex">          <input type="file" id="fileUploadInput" accept=".csv" style="display: none;" onchange="handleFileUpload(event)">          <button class="btn btn-primary" onclick="document.getElementById('fileUploadInput').click()"> Upload CSV File</button>          <button class="btn btn-danger" onclick="clearSem()">Clear Data</button>        </div>      </div>    </div>  </div>
-  <!-- Table View / Printable Area -->  <div class="card">    <div class="flex no-print" style="justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 10px;">      <div class="flex">        <button class="btn btn-outline" id="btnFilterPending" style="font-weight: 700; border-color: var(--danger); color: var(--danger);" onclick="setFilter('pending')">Pending (<span id="cPending">0</span>)</button>        <button class="btn btn-outline" id="btnFilterPaid" onclick="setFilter('paid')">Paid (<span id="cPaid">0</span>)</button>        <button class="btn btn-outline" id="btnFilterAll" onclick="setFilter('all')">All (<span id="cAll">0</span>)</button>      </div>      <div class="flex">        <button class="btn btn-outline" onclick="exportCSV()">Export CSV</button>        <button class="btn btn-primary" onclick="window.print()">Print / Save PDF</button>      </div>    </div>
-    <div style="margin-top: 14px;">      <h3 id="tableTitle" style="margin: 0 0 4px 0;"></h3>      <div style="font-size: 12px; color: #64748b;" id="reportDate"></div>    </div>
-    <table>      <thead>        <tr>          <th style="width: 45px;">Sl</th>          <th style="width: 120px;">Roll No</th>          <th>Student Name</th>          <th style="width: 95px;">Status</th>          <th style="width: 125px;">Paid Date</th>          <th style="width: 105px;" class="no-print">Action</th>        </tr>      </thead>      <tbody id="tableBody"></tbody>    </table>  </div></div>
-<script>  let activeSem = 'Sem 3';  let activeFilter = 'pending';
-  function getKey() { return `rr_fee_${activeSem}`; }  function loadList() { return JSON.parse(localStorage.getItem(getKey()) || '[]'); }  function saveList(list) { localStorage.setItem(getKey(), JSON.stringify(list)); render(); }
-  function switchSem(sem) {    activeSem = sem;    document.getElementById('uploadSectionHeader').textContent = `Student Roster: ${activeSem}`;    showMsg('', '');    render();  }
-  function handleKey(e) {    if (e.key === 'Enter') markPaid();  }
-  function showMsg(text, color) {    const el = document.getElementById('statusAlert');    el.textContent = text;    el.style.color = color;  }
-  function markPaid() {    const field = document.getElementById('rollInput');    const roll = field.value.trim().toLowerCase();    if (!roll) return;
-    const list = loadList();    const item = list.find(s => s.roll.toLowerCase() === roll);
-    if (!item) {      showMsg(`Roll "${field.value.trim()}" not found in ${activeSem}.`, '#b91c1c');      return;    }
-    if (item.paid) {      showMsg(`Roll ${item.roll} was already marked paid on ${item.datePaid}.`, '#d97706');    } else {      item.paid = true;      item.datePaid = new Date().toLocaleDateString('en-GB');      saveList(list);      showMsg(`Marked PAID: Roll ${item.roll} (${item.name})`, '#15803d');    }
-    field.value = '';    field.focus();  }
-  function toggleRow(roll) {    const list = loadList();    const item = list.find(s => s.roll === roll);    if (!item) return;
-    item.paid = !item.paid;    item.datePaid = item.paid ? new Date().toLocaleDateString('en-GB') : null;    saveList(list);  }
-  function downloadTemplate() {    const templateContent = "RollNo,Name\n101,Sample Student A\n102,Sample Student B\n103,Sample Student C\n";    const blob = new Blob([templateContent], { type: 'text/csv;charset=utf-8;' });    const a = document.createElement('a');    a.href = URL.createObjectURL(blob);    a.download = `Student_List_Template_${activeSem}.csv`;    a.click();  }
-  function handleFileUpload(event) {    const file = event.target.files[0];    if (!file) return;
-    const reader = new FileReader();    reader.onload = function(e) {      const text = e.target.result;      const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);      const list = loadList();      let importedCount = 0;
-      lines.forEach((line, index) => {        // Skip header if it exists        if (index === 0 && line.toLowerCase().includes('roll')) return;
-        const parts = line.split(',');        const roll = parts[0]?.trim();        const name = parts[1] ? parts.slice(1).join(',').trim().replace(/^["']|["']$/g, '') : '-';
-        if (roll && !list.some(s => s.roll.toLowerCase() === roll.toLowerCase())) {          list.push({ roll, name, paid: false, datePaid: null });          importedCount++;        }      });
-      saveList(list);      showMsg(`Successfully loaded ${importedCount} students into ${activeSem}.`, '#15803d');      event.target.value = ''; // Reset input    };    reader.readAsText(file);  }
-  function clearSem() {    if (confirm(`Remove all students from ${activeSem}? This cannot be undone.`)) {      localStorage.removeItem(getKey());      showMsg(`Data cleared for ${activeSem}.`, '#64748b');      render();    }  }
-  function setFilter(filter) {    activeFilter = filter;    render();  }
-  function exportCSV() {    const list = loadList();    let csv = "RollNo,Name,Status,PaymentDate\n";    list.forEach(s => {      csv += `"${s.roll}","${s.name}","${s.paid ? 'PAID' : 'PENDING'}","${s.datePaid || ''}"\n`;    });    const blob = new Blob([csv], { type: 'text/csv' });    const a = document.createElement('a');    a.href = URL.createObjectURL(blob);    a.download = `${activeSem}_Fee_Status.csv`;    a.click();  }
-  function render() {    const list = loadList();    const tbody = document.getElementById('tableBody');    tbody.innerHTML = '';
-    const paidList = list.filter(s => s.paid);    const pendingList = list.filter(s => !s.paid);
-    document.getElementById('cAll').textContent = list.length;    document.getElementById('cPaid').textContent = paidList.length;    document.getElementById('cPending').textContent = pendingList.length;
-    let displayList = list;    if (activeFilter === 'pending') displayList = pendingList;    if (activeFilter === 'paid') displayList = paidList;
-    document.getElementById('tableTitle').textContent = `${activeSem} — ${activeFilter === 'pending' ? 'Pending Record Fee Roster' : (activeFilter === 'paid' ? 'Paid Roster' : 'All Students')}`;    document.getElementById('reportDate').textContent = `Generated: ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}`;
-    if (displayList.length === 0) {      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#64748b; padding:18px;">No records found.</td></tr>`;      return;    }
-    displayList.forEach((s, idx) => {      const tr = document.createElement('tr');      tr.innerHTML = `        <td>${idx + 1}</td>        <td><strong>${s.roll}</strong></td>        <td>${s.name}</td>        <td><span class="badge ${s.paid ? 'badge-paid' : 'badge-pending'}">${s.paid ? 'PAID' : 'PENDING'}</span></td>        <td>${s.datePaid || '—'}</td>        <td class="no-print">          <button class="btn btn-outline" style="padding: 3px 8px; font-size: 11px;" onclick="toggleRow('${s.roll}')">            ${s.paid ? 'Revert' : 'Mark Paid'}          </button>        </td>      `;      tbody.appendChild(tr);    });  }
-  render();</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Rough Record Fee Manager</title>
+
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-hover: #1d4ed8;
+            --accent: #15803d;
+            --danger: #b91c1c;
+            --warning: #d97706;
+
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --border: #cbd5e1;
+
+            --text: #0f172a;
+            --muted: #64748b;
+
+            --success-bg: #dcfce7;
+            --success-text: #15803d;
+
+            --pending-bg: #fee2e2;
+            --pending-text: #b91c1c;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: var(--bg);
+            color: var(--text);
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Arial,
+                sans-serif;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        .page-header {
+            margin-bottom: 18px;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            margin-top: 5px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        /* =========================
+           CARD
+        ========================= */
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        /* =========================
+           FLEX
+        ========================= */
+
+        .flex {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .space-between {
+            justify-content: space-between;
+        }
+
+        /* =========================
+           SEMESTER SECTION
+        ========================= */
+
+        .semester-card {
+            background: #eef2ff;
+            border-color: #c7d2fe;
+        }
+
+        .section-label {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .radio-group label {
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .radio-group input {
+            cursor: pointer;
+        }
+
+        /* =========================
+           INPUT
+        ========================= */
+
+        .text-input {
+            width: 280px;
+            max-width: 100%;
+            padding: 10px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 7px;
+            background: white;
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+        }
+
+        .text-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.10);
+        }
+
+        /* =========================
+           BUTTONS
+        ========================= */
+
+        .btn {
+            border: none;
+            border-radius: 7px;
+            padding: 9px 14px;
+            min-height: 38px;
+
+            font-size: 13px;
+            font-weight: 600;
+
+            cursor: pointer;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+
+            transition:
+                background 0.15s ease,
+                transform 0.05s ease;
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-accent {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-accent:hover {
+            background: #166534;
+        }
+
+        .btn-outline {
+            background: white;
+            color: #334155;
+            border: 1px solid var(--border);
+        }
+
+        .btn-outline:hover {
+            background: #f1f5f9;
+        }
+
+        .btn-danger {
+            background: #fee2e2;
+            color: var(--danger);
+            border: 1px solid #fca5a5;
+        }
+
+        .btn-danger:hover {
+            background: #fecaca;
+        }
+
+        /* =========================
+           QUICK ENTRY
+        ========================= */
+
+        .card-title {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+        }
+
+        .feedback {
+            min-height: 20px;
+            margin-top: 8px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* =========================
+           TABLE CONTROLS
+        ========================= */
+
+        .table-controls {
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-active {
+            background: #e2e8f0;
+            font-weight: 700;
+        }
+
+        /* =========================
+           REPORT HEADER
+        ========================= */
+
+        .report-header {
+            margin-top: 15px;
+            margin-bottom: 8px;
+        }
+
+        .report-title {
+            margin: 0;
+            font-size: 19px;
+            font-weight: 700;
+        }
+
+        .report-date {
+            margin-top: 3px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        /* =========================
+           TABLE
+        ========================= */
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 13px;
+            background: white;
+        }
+
+        th,
+        td {
+            border: 1px solid var(--border);
+            padding: 9px 10px;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            background: #f1f5f9;
+            color: #334155;
+            font-weight: 700;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        tbody tr:hover {
+            background: #f1f5f9;
+        }
+
+        /* =========================
+           STATUS BADGES
+        ========================= */
+
+        .badge {
+            display: inline-block;
+            padding: 4px 9px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .badge-paid {
+            background: var(--success-bg);
+            color: var(--success-text);
+        }
+
+        .badge-pending {
+            background: var(--pending-bg);
+            color: var(--pending-text);
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 700px) {
+
+            body {
+                padding: 10px;
+            }
+
+            .page-header h1 {
+                font-size: 21px;
+            }
+
+            .card {
+                padding: 12px;
+            }
+
+            .text-input {
+                width: 100%;
+            }
+
+            .quick-entry-buttons {
+                width: 100%;
+            }
+
+            .quick-entry-buttons .btn {
+                flex: 1;
+            }
+
+            .table-controls {
+                align-items: flex-start;
+            }
+
+            .table-actions {
+                width: 100%;
+            }
+
+            .table-actions .btn {
+                flex: 1;
+            }
+
+            th,
+            td {
+                padding: 7px;
+                font-size: 12px;
+            }
+        }
+
+        /* =========================
+           PRINT
+        ========================= */
+
+        @page {
+            size: A4 portrait;
+            margin: 10mm;
+        }
+
+        @media print {
+
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+                color: black;
+                font-size: 11px;
+            }
+
+            .container {
+                max-width: none;
+                width: 100%;
+                margin: 0;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .card {
+                border: none;
+                box-shadow: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .report-header {
+                margin: 0 0 8px 0;
+            }
+
+            .report-title {
+                font-size: 16px;
+            }
+
+            .report-date {
+                font-size: 10px;
+            }
+
+            table {
+                width: 100%;
+                margin-top: 6px;
+                font-size: 10px;
+                page-break-inside: auto;
+            }
+
+            thead {
+                display: table-header-group;
+            }
+
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            th,
+            td {
+                border: 1px solid #475569;
+                padding: 5px 6px;
+            }
+
+            th {
+                background: #e2e8f0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .badge {
+                padding: 2px 5px;
+                font-size: 9px;
+                border: 1px solid #64748b;
+                background: white !important;
+                color: black !important;
+            }
+
+            .print-footer {
+                display: block !important;
+            }
+        }
+
+        .print-footer {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- =========================
+         PAGE HEADER
+    ========================== -->
+
+    <div class="page-header no-print">
+        <h1>Rough Record Fee Manager</h1>
+        <div class="subtitle">
+            Student payment tracking and pending fee report
+        </div>
+    </div>
+
+
+    <!-- =========================
+         SEMESTER SELECTOR
+    ========================== -->
+
+    <div class="card semester-card no-print">
+
+        <div class="flex space-between">
+
+            <div class="flex">
+
+                <span class="section-label">
+                    Target Semester:
+                </span>
+
+                <div class="radio-group">
+
+                    <label>
+                        <input
+                            type="radio"
+                            name="sem"
+                            value="Sem 3"
+                            checked
+                            onchange="switchSem('Sem 3')"
+                        >
+                        Semester 3
+                    </label>
+
+                    <label>
+                        <input
+                            type="radio"
+                            name="sem"
+                            value="Sem 5"
+                            onchange="switchSem('Sem 5')"
+                        >
+                        Semester 5
+                    </label>
+
+                </div>
+
+            </div>
+
+            <button
+                class="btn btn-outline"
+                onclick="downloadTemplate()"
+            >
+                ⬇ Download CSV Template
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         QUICK PAYMENT ENTRY
+    ========================== -->
+
+    <div class="card no-print">
+
+        <h3 class="card-title">
+            Record Payment by Roll Number
+        </h3>
+
+        <div class="flex">
+
+            <input
+                type="text"
+                id="rollInput"
+                class="text-input"
+                placeholder="Enter Roll Number and press Enter"
+                autocomplete="off"
+                autofocus
+                onkeydown="handleKey(event)"
+            >
+
+            <div class="flex quick-entry-buttons">
+
+                <button
+                    class="btn btn-accent"
+                    onclick="markPaid()"
+                >
+                    ✓ Mark Paid
+                </button>
+
+            </div>
+
+        </div>
+
+        <div
+            id="statusAlert"
+            class="feedback"
+        ></div>
+
+    </div>
+
+
+    <!-- =========================
+         CSV UPLOAD
+    ========================== -->
+
+    <div class="card no-print">
+
+        <div class="flex space-between">
+
+            <div>
+                <strong id="uploadSectionHeader">
+                    Student Roster: Semester 3
+                </strong>
+
+                <div
+                    style="
+                        margin-top:4px;
+                        color:var(--muted);
+                        font-size:12px;
+                    "
+                >
+                    Upload a CSV file containing RollNo and Name.
+                </div>
+            </div>
+
+            <div class="flex">
+
+                <input
+                    type="file"
+                    id="fileUploadInput"
+                    accept=".csv"
+                    style="display:none"
+                    onchange="handleFileUpload(event)"
+                >
+
+                <button
+                    class="btn btn-primary"
+                    onclick="document.getElementById('fileUploadInput').click()"
+                >
+                    ↑ Upload CSV File
+                </button>
+
+                <button
+                    class="btn btn-danger"
+                    onclick="clearSem()"
+                >
+                    Clear Data
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         REPORT / TABLE
+    ========================== -->
+
+    <div class="card">
+
+        <!-- TABLE CONTROLS -->
+
+        <div class="table-controls flex space-between no-print">
+
+            <div class="filter-buttons">
+
+                <button
+                    class="btn btn-outline"
+                    id="btnFilterPending"
+                    onclick="setFilter('pending')"
+                >
+                    Pending
+                    (<span id="cPending">0</span>)
+                </button>
+
+                <button
+                    class="btn btn-outline"
+                    id="btnFilterPaid"
+                    onclick="setFilter('paid')"
+                >
+                    Paid
+                    (<span id="cPaid">0</span>)
+                </button>
+
+                <button
+                    class="btn btn-outline"
+                    id="btnFilterAll"
+                    onclick="setFilter('all')"
+                >
+                    All
+                    (<span id="cAll">0</span>)
+                </button>
+
+            </div>
+
+
+            <div class="flex table-actions">
+
+                <button
+                    class="btn btn-outline"
+                    onclick="exportCSV()"
+                >
+                    Export CSV
+                </button>
+
+                <button
+                    class="btn btn-primary"
+                    onclick="window.print()"
+                >
+                    🖨 Print / Save PDF
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- REPORT HEADING -->
+
+        <div class="report-header">
+
+            <h2
+                id="tableTitle"
+                class="report-title"
+            ></h2>
+
+            <div
+                id="reportDate"
+                class="report-date"
+            ></div>
+
+        </div>
+
+
+        <!-- TABLE -->
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th style="width:45px;">
+                            Sl
+                        </th>
+
+                        <th style="width:110px;">
+                            Roll No
+                        </th>
+
+                        <th>
+                            Student Name
+                        </th>
+
+                        <th style="width:100px;">
+                            Status
+                        </th>
+
+                        <th style="width:120px;">
+                            Paid Date
+                        </th>
+
+                        <th
+                            style="width:110px;"
+                            class="no-print"
+                        >
+                            Action
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="tableBody"></tbody>
+
+            </table>
+
+        </div>
+
+
+        <div class="print-footer">
+            Rough Record Fee Report
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    /* =====================================================
+       GLOBAL VARIABLES
+    ===================================================== */
+
+    let activeSem = "Sem 3";
+    let activeFilter = "pending";
+
+
+    /* =====================================================
+       LOCAL STORAGE
+    ===================================================== */
+
+    function getKey() {
+        return "rr_fee_" + activeSem;
+    }
+
+
+    function loadList() {
+
+        try {
+
+            return JSON.parse(
+                localStorage.getItem(getKey()) || "[]"
+            );
+
+        } catch (error) {
+
+            console.error(error);
+
+            return [];
+
+        }
+    }
+
+
+    function saveList(list) {
+
+        localStorage.setItem(
+            getKey(),
+            JSON.stringify(list)
+        );
+
+        render();
+    }
+
+
+    /* =====================================================
+       SEMESTER SWITCH
+    ===================================================== */
+
+    function switchSem(sem) {
+
+        activeSem = sem;
+
+        document.getElementById(
+            "uploadSectionHeader"
+        ).textContent =
+            "Student Roster: " + activeSem;
+
+        showMsg("", "");
+
+        render();
+
+        document.getElementById(
+            "rollInput"
+        ).focus();
+    }
+
+
+    /* =====================================================
+       ENTER KEY
+    ===================================================== */
+
+    function handleKey(event) {
+
+        if (event.key === "Enter") {
+
+            event.preventDefault();
+
+            markPaid();
+
+        }
+
+    }
+
+
+    /* =====================================================
+       STATUS MESSAGE
+    ===================================================== */
+
+    function showMsg(text, color) {
+
+        const element =
+            document.getElementById("statusAlert");
+
+        element.textContent = text;
+        element.style.color = color;
+
+    }
+
+
+    /* =====================================================
+       MARK PAYMENT
+    ===================================================== */
+
+    function markPaid() {
+
+        const field =
+            document.getElementById("rollInput");
+
+        const originalRoll =
+            field.value.trim();
+
+        const roll =
+            originalRoll.toLowerCase();
+
+        if (!roll) {
+
+            showMsg(
+                "Please enter a roll number.",
+                "#b91c1c"
+            );
+
+            return;
+        }
+
+
+        const list = loadList();
+
+
+        const item = list.find(
+            student =>
+                String(student.roll)
+                    .toLowerCase() === roll
+        );
+
+
+        if (!item) {
+
+            showMsg(
+                'Roll "' +
+                originalRoll +
+                '" not found in ' +
+                activeSem +
+                ".",
+                "#b91c1c"
+            );
+
+            return;
+        }
+
+
+        if (item.paid) {
+
+            showMsg(
+                "Roll " +
+                item.roll +
+                " was already marked paid on " +
+                item.datePaid +
+                ".",
+                "#d97706"
+            );
+
+        } else {
+
+            item.paid = true;
+
+            item.datePaid =
+                new Date().toLocaleDateString(
+                    "en-GB"
+                );
+
+            saveList(list);
+
+            showMsg(
+                "Marked PAID: Roll " +
+                item.roll +
+                " (" +
+                item.name +
+                ")",
+                "#15803d"
+            );
+
+        }
+
+
+        field.value = "";
+
+        field.focus();
+
+    }
+
+
+    /* =====================================================
+       TOGGLE PAYMENT
+    ===================================================== */
+
+    function toggleRow(roll) {
+
+        const list = loadList();
+
+        const item = list.find(
+            student =>
+                String(student.roll) ===
+                String(roll)
+        );
+
+        if (!item) return;
+
+
+        item.paid = !item.paid;
+
+        item.datePaid = item.paid
+            ? new Date().toLocaleDateString("en-GB")
+            : null;
+
+
+        saveList(list);
+
+    }
+
+
+    /* =====================================================
+       CSV TEMPLATE
+    ===================================================== */
+
+    function downloadTemplate() {
+
+        const templateContent =
+            "RollNo,Name\n" +
+            "101,Sample Student A\n" +
+            "102,Sample Student B\n" +
+            "103,Sample Student C\n";
+
+
+        const blob = new Blob(
+            [templateContent],
+            {
+                type: "text/csv;charset=utf-8;"
+            }
+        );
+
+
+        const url =
+            URL.createObjectURL(blob);
+
+
+        const link =
+            document.createElement("a");
+
+        link.href = url;
+
+        link.download =
+            "Student_List_Template_" +
+            activeSem.replace(/\s+/g, "_") +
+            ".csv";
+
+
+        document.body.appendChild(link);
+
+        link.click();
+
+        document.body.removeChild(link);
+
+        URL.revokeObjectURL(url);
+
+    }
+
+
+    /* =====================================================
+       CSV UPLOAD
+    ===================================================== */
+
+    function handleFileUpload(event) {
+
+        const file =
+            event.target.files[0];
+
+        if (!file) return;
+
+
+        const reader =
+            new FileReader();
+
+
+        reader.onload = function(e) {
+
+            const text =
+                e.target.result;
+
+
+            const lines =
+                text
+                    .split(/\r?\n/)
+                    .map(line => line.trim())
+                    .filter(Boolean);
+
+
+            if (lines.length === 0) {
+
+                showMsg(
+                    "The CSV file is empty.",
+                    "#b91c1c"
+                );
+
+                event.target.value = "";
+
+                return;
+            }
+
+
+            const list = loadList();
+
+            let importedCount = 0;
+
+
+            lines.forEach(
+                (line, index) => {
+
+                    /* Skip header */
+
+                    if (
+                        index === 0 &&
+                        line.toLowerCase().includes("roll")
+                    ) {
+                        return;
+                    }
+
+
+                    const parts =
+                        parseCSVLine(line);
+
+
+                    const roll =
+                        parts[0]
+                            ? parts[0].trim()
+                            : "";
+
+
+                    const name =
+                        parts[1]
+                            ? parts
+                                .slice(1)
+                                .join(",")
+                                .trim()
+                                .replace(
+                                    /^["']|["']$/g,
+                                    ""
+                                )
+                            : "-";
+
+
+                    if (
+                        roll &&
+                        !list.some(
+                            student =>
+                                String(student.roll)
+                                    .toLowerCase() ===
+                                roll.toLowerCase()
+                        )
+                    ) {
+
+                        list.push({
+
+                            roll: roll,
+
+                            name:
+                                name || "-",
+
+                            paid: false,
+
+                            datePaid: null
+
+                        });
+
+
+                        importedCount++;
+
+                    }
+
+                }
+            );
+
+
+            saveList(list);
+
+
+            showMsg(
+                "Successfully loaded " +
+                importedCount +
+                " new student(s) into " +
+                activeSem +
+                ".",
+                "#15803d"
+            );
+
+
+            event.target.value = "";
+
+        };
+
+
+        reader.onerror = function() {
+
+            showMsg(
+                "Unable to read the CSV file.",
+                "#b91c1c"
+            );
+
+            event.target.value = "";
+
+        };
+
+
+        reader.readAsText(file);
+
+    }
+
+
+    /* =====================================================
+       BASIC CSV PARSER
+    ===================================================== */
+
+    function parseCSVLine(line) {
+
+        const result = [];
+
+        let current = "";
+
+        let insideQuotes = false;
+
+
+        for (let i = 0; i < line.length; i++) {
+
+            const char = line[i];
+
+
+            if (char === '"') {
+
+                if (
+                    insideQuotes &&
+                    line[i + 1] === '"'
+                ) {
+
+                    current += '"';
+
+                    i++;
+
+                } else {
+
+                    insideQuotes =
+                        !insideQuotes;
+
+                }
+
+            } else if (
+                char === "," &&
+                !insideQuotes
+            ) {
+
+                result.push(current);
+
+                current = "";
+
+            } else {
+
+                current += char;
+
+            }
+
+        }
+
+
+        result.push(current);
+
+
+        return result;
+
+    }
+
+
+    /* =====================================================
+       CLEAR SEMESTER
+    ===================================================== */
+
+    function clearSem() {
+
+        const confirmed =
+            confirm(
+                "Remove all students from " +
+                activeSem +
+                "?\n\nThis cannot be undone."
+            );
+
+
+        if (!confirmed) return;
+
+
+        localStorage.removeItem(
+            getKey()
+        );
+
+
+        showMsg(
+            "Data cleared for " +
+            activeSem +
+            ".",
+            "#64748b"
+        );
+
+
+        render();
+
+    }
+
+
+    /* =====================================================
+       FILTER
+    ===================================================== */
+
+    function setFilter(filter) {
+
+        activeFilter = filter;
+
+        render();
+
+    }
+
+
+    /* =====================================================
+       UPDATE FILTER BUTTONS
+    ===================================================== */
+
+    function updateFilterButtons() {
+
+        const buttons = {
+
+            pending:
+                document.getElementById(
+                    "btnFilterPending"
+                ),
+
+            paid:
+                document.getElementById(
+                    "btnFilterPaid"
+                ),
+
+            all:
+                document.getElementById(
+                    "btnFilterAll"
+                )
+
+        };
+
+
+        Object.keys(buttons).forEach(
+            key => {
+
+                buttons[key]
+                    .classList
+                    .toggle(
+                        "filter-active",
+                        key === activeFilter
+                    );
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       EXPORT CSV
+    ===================================================== */
+
+    function exportCSV() {
+
+        const list = loadList();
+
+
+        let csv =
+            "RollNo,Name,Status,PaymentDate\n";
+
+
+        list.forEach(student => {
+
+            const roll =
+                csvEscape(student.roll);
+
+            const name =
+                csvEscape(student.name);
+
+            const status =
+                student.paid
+                    ? "PAID"
+                    : "PENDING";
+
+            const date =
+                csvEscape(
+                    student.datePaid || ""
+                );
+
+
+            csv +=
+                '"' +
+                roll +
+                '","' +
+                name +
+                '","' +
+                status +
+                '","' +
+                date +
+                '"\n';
+
+        });
+
+
+        const blob = new Blob(
+            [csv],
+            {
+                type: "text/csv;charset=utf-8;"
+            }
+        );
+
+
+        const url =
+            URL.createObjectURL(blob);
+
+
+        const link =
+            document.createElement("a");
+
+        link.href = url;
+
+        link.download =
+            activeSem.replace(/\s+/g, "_") +
+            "_Fee_Status.csv";
+
+
+        document.body.appendChild(link);
+
+        link.click();
+
+        document.body.removeChild(link);
+
+        URL.revokeObjectURL(url);
+
+    }
+
+
+    /* =====================================================
+       CSV ESCAPE
+    ===================================================== */
+
+    function csvEscape(value) {
+
+        return String(value ?? "")
+            .replace(/"/g, '""');
+
+    }
+
+
+    /* =====================================================
+       HTML ESCAPE
+    ===================================================== */
+
+    function escapeHTML(value) {
+
+        return String(value ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+    }
+
+
+    /* =====================================================
+       RENDER TABLE
+    ===================================================== */
+
+    function render() {
+
+        const list = loadList();
+
+        const tbody =
+            document.getElementById(
+                "tableBody"
+            );
+
+
+        tbody.innerHTML = "";
+
+
+        const paidList =
+            list.filter(
+                student => student.paid
+            );
+
+
+        const pendingList =
+            list.filter(
+                student => !student.paid
+            );
+
+
+        /* Counts */
+
+        document.getElementById(
+            "cAll"
+        ).textContent = list.length;
+
+
+        document.getElementById(
+            "cPaid"
+        ).textContent =
+            paidList.length;
+
+
+        document.getElementById(
+            "cPending"
+        ).textContent =
+            pendingList.length;
+
+
+        /* Active filter */
+
+        let displayList = list;
+
+
+        if (activeFilter === "pending") {
+
+            displayList =
+                pendingList;
+
+        } else if (
+            activeFilter === "paid"
+        ) {
+
+            displayList =
+                paidList;
+
+        }
+
+
+        /* Title */
+
+        let filterTitle =
+            "All Students";
+
+
+        if (activeFilter === "pending") {
+
+            filterTitle =
+                "Pending Record Fee Roster";
+
+        } else if (
+            activeFilter === "paid"
+        ) {
+
+            filterTitle =
+                "Paid Roster";
+
+        }
+
+
+        document.getElementById(
+            "tableTitle"
+        ).textContent =
+            activeSem +
+            " — " +
+            filterTitle;
+
+
+        /* Date */
+
+        document.getElementById(
+            "reportDate"
+        ).textContent =
+            "Generated: " +
+            new Date().toLocaleDateString(
+                "en-GB",
+                {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                }
+            );
+
+
+        updateFilterButtons();
+
+
+        /* Empty */
+
+        if (displayList.length === 0) {
+
+            tbody.innerHTML = `
+
+                <tr>
+
+                    <td
+                        colspan="6"
+                        style="
+                            text-align:center;
+                            color:#64748b;
+                            padding:25px;
+                        "
+                    >
+                        No records found.
+                    </td>
+
+                </tr>
+
+            `;
+
+            return;
+
+        }
+
+
+        /* Rows */
+
+        displayList.forEach(
+            (student, index) => {
+
+                const tr =
+                    document.createElement("tr");
+
+
+                const safeRoll =
+                    escapeHTML(student.roll);
+
+
+                const safeName =
+                    escapeHTML(student.name);
+
+
+                tr.innerHTML = `
+
+                    <td>
+                        ${index + 1}
+                    </td>
+
+                    <td>
+                        <strong>
+                            ${safeRoll}
+                        </strong>
+                    </td>
+
+                    <td>
+                        ${safeName}
+                    </td>
+
+                    <td>
+
+                        <span
+                            class="badge ${
+                                student.paid
+                                    ? "badge-paid"
+                                    : "badge-pending"
+                            }"
+                        >
+                            ${
+                                student.paid
+                                    ? "PAID"
+                                    : "PENDING"
+                            }
+                        </span>
+
+                    </td>
+
+                    <td>
+                        ${
+                            student.datePaid
+                                ? escapeHTML(
+                                    student.datePaid
+                                )
+                                : "—"
+                        }
+                    </td>
+
+                    <td class="no-print">
+
+                        <button
+                            class="btn btn-outline"
+                            style="
+                                padding:4px 9px;
+                                min-height:28px;
+                                font-size:11px;
+                            "
+                            onclick="toggleRowByIndex('${encodeURIComponent(student.roll)}')"
+                        >
+                            ${
+                                student.paid
+                                    ? "Revert"
+                                    : "Mark Paid"
+                            }
+                        </button>
+
+                    </td>
+
+                `;
+
+
+                tbody.appendChild(tr);
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       SAFE ROW TOGGLE
+    ===================================================== */
+
+    function toggleRowByIndex(encodedRoll) {
+
+        const roll =
+            decodeURIComponent(
+                encodedRoll
+            );
+
+
+        const list = loadList();
+
+
+        const item =
+            list.find(
+                student =>
+                    String(student.roll) ===
+                    String(roll)
+            );
+
+
+        if (!item) return;
+
+
+        item.paid =
+            !item.paid;
+
+
+        item.datePaid =
+            item.paid
+                ? new Date().toLocaleDateString(
+                    "en-GB"
+                )
+                : null;
+
+
+        saveList(list);
+
+    }
+
+
+    /* =====================================================
+       INITIAL LOAD
+    ===================================================== */
+
+    render();
+
+</script>
+
+</body>
+</html>
